@@ -1,0 +1,36 @@
+# Lista de Tareas - Sistema de Autenticación Enterprise
+
+- [x] **Fase 0: Análisis e Inicialización**
+    - [x] Analizar estructura actual
+    - [x] Crear [Allcheck.md](file:///home/mylisuthy/Escritorio/starterLogin/Allcheck.md) (Design Decisions & Progress)
+    - [x] Crear Plan de Implementación
+- [x] **Fase 1: El Núcleo del Dominio (Backend - DDD Puro)**
+    - [x] Crear clase abstracta [BaseEntity](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/Common/BaseEntity.cs#12-18)
+    - [x] Implementar Entidades Ricas: [User](file:///home/mylisuthy/Escritorio/starterLogin/LogiFrontend/src/stores/auth.ts#4-10) y [Role](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/Entities/Role.cs#6-33)
+    - [x] Implementar Value Objects: [Email](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/ValueObjects/Email.cs#6-28) y [PasswordHash](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/ValueObjects/PasswordHash.cs#5-24)
+    - [x] Definir Interfaces de Repositorio: [IUserRepository](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/Interfaces/IUserRepository.cs#8-16), [IUnitOfWork](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/Interfaces/IUnitOfWork.cs#5-10)
+- [x] **Fase 2: Infraestructura y Persistencia (EF Core Code First)**
+    - [x] Configurar [ApplicationDbContext](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Infrastructure/Persistence/ApplicationDbContext.cs#10-13)
+    - [x] Configurar `IEntityTypeConfiguration`
+    - [x] Configurar Inyección de Dependencias
+    - [x] Ejecutar Migraciones y Seeding
+- [x] **Fase 3: Lógica de Aplicación (CQRS + DTOs)**
+    - [x] Crear DTOs ([LoginRequest](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Application/Auth/Common/Requests.cs#3-4), [RegisterRequest](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Application/Auth/Common/Requests.cs#5-6), `UserResponse`)
+    - [x] Configurar Mappers (Manual en Handlers)
+    - [x] Implementar Features CQRS (Register, Login)
+    - [x] Implementar Servicio de Token JWT
+- [x] **Fase 4: Exposición de la API (Controllers)**
+    - [x] Crear [AuthController](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Api/Controllers/AuthController.cs#10-37)
+    - [x] Implementar Global Exception Handler
+    - [x] Configurar Swagger con Auth
+- [x] **Fase 5: Arquitectura Frontend (Vue 3 + TS)**
+    - [x] Setup Inicial (Vite + Vue 3 + TS)
+    - [x] Estructura de Carpetas
+    - [x] Configurar Bootstrap 5
+    - [x] Configurar Pinia (Store)
+    - [x] Configurar Axios (Interceptor)
+- [x] **Fase 6: Integración y UI**
+    - [x] Vistas de Login y Registro
+    - [x] Conexión con API
+    - [x] Protección de Rutas
+    - [x] Manejo de Roles en UI

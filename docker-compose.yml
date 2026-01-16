@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Password
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  backend:
+    build:
+      context: ./LogiBackend
+      dockerfile: Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=database;Database=StarterLoginDb;User Id=sa;Password=YourStrong@Password;TrustServerCertificate=True;
+      - JwtSettings__Secret=ThisIsAVerySecretKeyForJWTAuthentication2026!
+      - JwtSettings__Issuer=StarterLoginApi
+      - JwtSettings__Audience=StarterLoginFront
+    ports:
+      - "5170:80"
+    depends_on:
+      - database
+
+  frontend:
+    build:
+      context: ./LogiFrontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  sql_data:

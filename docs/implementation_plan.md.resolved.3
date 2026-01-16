@@ -1,0 +1,41 @@
+# Implementación Fase 5 y 6: Frontend Enterprise (Vue 3 + TS)
+
+Esta etapa se enfoca en crear una interfaz de usuario moderna, limpia y profesional que consuma el API de autenticación.
+
+## Proposed Changes
+
+### [LogiFrontend]
+
+#### [NEW] [Project Setup]
+- Inicializar Vite + Vue 3 + TypeScript.
+- Instalar dependencias: `pinia`, `axios`, `vue-router`, `bootstrap`, `bootstrap-vue-next`.
+
+#### [NEW] [Design System (Vanilla CSS)]
+- `src/assets/styles/main.css`: Definición de variables CSS (paleta de colores enterprise), gradientes, y clases de utilidad premium.
+
+#### [NEW] [Auth Store (Pinia)]
+- `src/stores/auth.ts`: Gestión del estado del usuario, token y persistencia en localStorage.
+
+#### [NEW] [HTTP Client (Axios)]
+- `src/api/axios.ts`: Configuración de instancia base y interceptores para inyectar el JWT.
+
+#### [NEW] [Views & Components]
+- `LoginView.vue`: Vista de inicio de sesión con diseño moderno.
+- `RegisterView.vue`: Vista de registro.
+- `DashboardView.vue`: Vista protegida (sólo para usuarios autenticados).
+- `Navbar.vue`: Componente de navegación con manejo de estados.
+
+## UI Design Concepts
+- **Palette**: Deep Blues (`#0f172a`), Clean Whites, and Slate Greys.
+- **Effects**: Glassmorphism en tarjetas de login, micro-animaciones en transiciones de ruta.
+- **Typography**: Inter o Roboto para un look moderno y legible.
+
+## Verification Plan
+
+### Automated Tests
+- `npm run build` para asegurar que el tipado de TypeScript es correcto.
+
+### Manual Verification
+- Probar el flujo completo: Registro -> Login -> Acceso a Dashboard.
+- Verificar que el token se guarda y se envía en las cabeceras.
+- Verificar la protección de rutas (Route Guards).

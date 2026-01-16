@@ -1,0 +1,36 @@
+# Implementación Fase 3: Lógica de Aplicación (CQRS + DTOs)
+
+En esta fase implementaremos el "cerebro" del sistema, coordinando las peticiones mediante el patrón CQRS y manejando la seguridad con JWT.
+
+## Proposed Changes
+
+### [StarterLogin.Application]
+
+#### [NEW] [DTOs]
+- `LoginRequest.cs`, `RegisterRequest.cs`, `AuthResponse.cs`
+
+#### [NEW] [Authentication Service]
+- Interfaz `IJwtTokenGenerator` y su implementación (temporalmente en Application o Infrastructure).
+- Lógica de Hashing de contraseñas.
+
+#### [NEW] [Features (CQRS)]
+- `RegisterUser` (Command, Handler, Validator).
+- `LoginUser` (Query, Handler, Validator).
+
+#### [NEW] [DependencyInjection.cs](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Application/DependencyInjection.cs)
+Registro de MediatR y otros servicios de aplicación.
+
+### [StarterLogin.Infrastructure]
+
+#### [NEW] [PasswordHasher.cs]
+Implementación del hashing usando BCrypt.
+
+## Verification Plan
+
+### Automated Tests
+- Compilación de la capa Application y Api.
+- Pruebas unitarias para la lógica de login (opcional si el tiempo permite).
+
+### Manual Verification
+- Verificación de la generación de tokens JWT.
+- Verificación del correcto hasheo de contraseñas en la base de datos al registrar.

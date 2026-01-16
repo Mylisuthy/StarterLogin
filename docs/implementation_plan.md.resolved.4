@@ -1,0 +1,40 @@
+# Implementación Fase 7: Perfil de Usuario y Refinamiento UX (Nivel Elite)
+
+Esta fase eleva la aplicación de un simple login a una plataforma funcional con estándares estéticos y técnicos de 2026.
+
+## Proposed Changes
+
+### [Backend]
+- **AuthController**: Agregar endpoint `GET /me` (protegido por JWT) para obtener la información completa del usuario actual.
+- **Application**: Agregar `GetCurrentUserQuery` y su handler.
+
+### [Frontend]
+
+#### [NEW] [Design System Extension]
+- Mejoras en [assets/main.css](file:///home/mylisuthy/Escritorio/starterLogin/LogiFrontend/src/assets/main.css) para soportar **Dark Mode** nativo.
+- Gradientes dinámicos y sombras suaves tipo "neomorfismo suave".
+
+#### [NEW] [User Profile View]
+- `ProfileView.vue`: Pantalla para ver y editar datos básicos (Nombre, Email).
+- Avatar generado automáticamente basado en iniciales.
+
+#### [NEW] [Enhanced UX]
+- **Toasts**: Implementar un sistema de notificaciones no intrusivo (tipo Shadcn/ui) para confirmaciones de acciones.
+- **Form Validation**: Feedback visual inmediato mientras el usuario escribe.
+- **Skeleton Loaders**: Efectos de carga suaves para el Dashboard.
+
+## 2026 Design Philosophy
+- **Minimalismo Extremo**: Menos es más. Espaciado generoso.
+- **Micro-interacciones**: Feedback háptico visual al hacer click o hover.
+- **Accesibilidad**: Contraste optimizado y soporte para navegación por teclado.
+
+## Verification Plan
+
+### Automated Tests
+- Build de backend y frontend.
+- Verificación del endpoint `/me` con un token válido.
+
+### Manual Verification
+- Probar el cambio entre temas (Dark/Light).
+- Validar el flujo de edición del perfil.
+- Confirmar que los Toasts aparecen correctamente tras errores o éxitos.

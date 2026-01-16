@@ -1,0 +1,34 @@
+# Walkthrough: Sistema de Autenticación Backend (Fases 1-4)
+
+Hemos completado el desarrollo del Backend siguiendo una arquitectura **Enterprise Grade**. Aquí está el resumen de lo logrado:
+
+## 🏰 Arquitectura Implementada
+
+### 1. Capa de Dominio (DDD)
+- **BaseEntity**: Entidad base con GUIDs y auditoría.
+- **Entidades Ricas**: [User](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/Entities/User.cs#19-20) y [Role](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/Entities/Role.cs#13-18) con lógica encapsulada.
+- **Value Objects**: [Email](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/ValueObjects/Email.cs#10-14) y [PasswordHash](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Domain/ValueObjects/PasswordHash.cs#9-13) con validaciones de dominio.
+
+### 2. Capa de Infraestructura
+- **EF Core Persistence**: Mapeo profesional mediante Fluent API.
+- **Security**: Implementación de `BCrypt` para contraseñas y `JWT` para tokens.
+- **Unit of Work & Repositories**: Desacoplamiento total de la base de datos.
+- **Seeding**: Creación automática de base de datos, roles y usuario admin.
+
+### 3. Capa de Aplicación (CQRS)
+- **MediatR**: Implementación de [LoginUserQuery](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Application/Auth/Queries/Login/LoginUserQuery.cs#11-15) y [RegisterUserCommand](file:///home/mylisuthy/Escritorio/starterLogin/LogiBackend/src/StarterLogin.Application/Auth/Commands/Register/RegisterUserCommand.cs#12-17).
+- **Desacoplamiento**: Los controladores no conocen la lógica de negocio, solo envían comandos.
+
+### 4. Capa API
+- **AuthController**: Endpoints de `login` y `register`.
+- **Middleware**: Manejo global de excepciones devolviendo errores en formato RFC 7807 (Problem Details).
+- **Swagger**: Configurado con el botón **Authorize** para probar los tokens JWT.
+
+## 🛠️ Cómo verificar el Backend
+
+1. **Compilación**: Ejecuta `dotnet build` en la solución.
+2. **Base de Datos**: Al ejecutar el proyecto `StarterLogin.Api`, se creará automáticamente la base de datos `StarterLoginDb` en LocalDB con el usuario `admin` (password: `Admin123!`).
+3. **Swagger**: Navega a `https://localhost:{port}/swagger` para probar los endpoints.
+
+---
+¡El backend está listo para ser consumido por el Frontend! 🚀
