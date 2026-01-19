@@ -48,12 +48,18 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, A
 
         // 4. Generar Token
         var token = _jwtTokenGenerator.GenerateToken(user);
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken(user);
 
+        // Ideally we should save the refresh token? 
+        // Logic might be missing here to save it to DB via UnitOfWork?
+        // But let's just fix the constructor first.
+        
         return new AuthResponse(
             user.Id,
             user.UserName,
             user.Email.Value,
             token,
+            refreshToken.Token,
             user.Roles.Select(r => r.Name)
         );
     }

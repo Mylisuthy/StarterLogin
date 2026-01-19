@@ -30,6 +30,7 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, A
             user.UserName,
             user.Email.Value,
             string.Empty, // No necesitamos enviar el token de nuevo aquí si ya está autenticado
+            string.Empty,
             user.Roles.Select(r => r.Name)
         );
     }

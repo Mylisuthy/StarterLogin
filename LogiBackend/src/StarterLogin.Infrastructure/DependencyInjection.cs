@@ -6,6 +6,7 @@ using StarterLogin.Domain.Interfaces;
 using StarterLogin.Infrastructure.Persistence;
 using StarterLogin.Infrastructure.Repositories;
 using StarterLogin.Infrastructure.Security;
+using StarterLogin.Infrastructure.Services;
 
 namespace StarterLogin.Infrastructure;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IImageService, CloudinaryService>();
 
         return services;
     }

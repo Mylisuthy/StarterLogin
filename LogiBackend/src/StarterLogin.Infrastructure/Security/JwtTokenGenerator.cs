@@ -52,4 +52,14 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public RefreshToken GenerateRefreshToken(User user)
+    {
+        var randomBytes = new byte[32];
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        var token = Convert.ToBase64String(randomBytes);
+
+        return new RefreshToken(user.Id, token, DateTime.UtcNow.AddDays(7));
+    }
 }

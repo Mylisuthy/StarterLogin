@@ -13,6 +13,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<MagicCard> MagicCards => Set<MagicCard>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

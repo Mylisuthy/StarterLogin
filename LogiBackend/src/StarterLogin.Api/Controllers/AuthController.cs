@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StarterLogin.Application.Auth.Commands.Register;
+using StarterLogin.Application.Auth.Commands.RefreshToken;
 using StarterLogin.Application.Auth.Common;
 using StarterLogin.Application.Auth.Queries.GetCurrentUser;
 using StarterLogin.Application.Auth.Queries.Login;
@@ -48,5 +49,13 @@ public class AuthController : ControllerBase
         var query = new GetCurrentUserQuery(userId);
         var result = await _mediator.Send(query);
         return Ok(result);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshTokenRequest request)
+    {
+        var command = new RefreshTokenCommand(request.Token);
+        var authResult = await _mediator.Send(command);
+        return Ok(authResult);
     }
 }
