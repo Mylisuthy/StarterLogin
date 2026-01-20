@@ -5,7 +5,7 @@ services:
     image: postgres:latest
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=your_password
+      - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=StarterLoginDb
     ports:
       - "5432:5432"
@@ -17,7 +17,7 @@ services:
       context: ./LogiBackend
       dockerfile: Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Host=database;Database=StarterLoginDb;Username=postgres;Password=your_password
+      - ConnectionStrings__DefaultConnection=Host=database;Database=StarterLoginDb;Username=postgres;Password=admin
       - JwtSettings__Secret=ThisIsAVerySecretKeyForJWTAuthentication2026!
       - JwtSettings__Issuer=StarterLoginApi
       - JwtSettings__Audience=StarterLoginFront
