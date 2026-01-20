@@ -110,7 +110,7 @@ docker-compose up --build
 ```
 
 ### Ejecución Manual
-1.  **Base de Datos**: Asegúrate de tener PostgreSQL corriendo (en el puerto **5433** si usas Docker) y actualiza el `appsettings.json`.
+1.  **Base de Datos**: Asegúrate de tener PostgreSQL corriendo (en el puerto **5902** si usas Docker) y actualiza el `appsettings.json`.
 2.  **Migraciones**: Al cambiar de SQL Server a PostgreSQL, es necesario regenerar las migraciones:
     ```bash
     cd LogiBackend/src/StarterLogin.Infrastructure
