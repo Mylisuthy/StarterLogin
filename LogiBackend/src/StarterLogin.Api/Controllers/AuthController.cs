@@ -10,6 +10,9 @@ using StarterLogin.Application.Auth.Queries.Login;
 
 namespace StarterLogin.Api.Controllers;
 
+/// <summary>
+/// Controlador para la gestión de autenticación y usuarios.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
@@ -21,6 +24,11 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Registra un nuevo usuario en el sistema.
+    /// </summary>
+    /// <param name="request">Datos del usuario a registrar.</param>
+    /// <returns>Resultado de la autenticación con el token generado.</returns>
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
@@ -29,6 +37,11 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Inicia sesión un usuario existente.
+    /// </summary>
+    /// <param name="request">Credenciales del usuario.</param>
+    /// <returns>Token JWT e información del usuario.</returns>
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
@@ -37,6 +50,10 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Obtiene la información del usuario autenticado actualmente.
+    /// </summary>
+    /// <returns>Datos del usuario actual.</returns>
     [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<AuthResponse>> GetMe()

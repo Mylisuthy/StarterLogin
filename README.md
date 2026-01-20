@@ -65,6 +65,7 @@ graph TD
 | :--- | :--- | :--- | :--- |
 | **Frontend** | `http://localhost:5900` | 5900 | Interfaz de usuario (Vue 3) |
 | **Backend API** | `http://localhost:5901` | 5901 | Endpoint base: `/api` |
+| **API Docs (Swagger)** | `http://localhost:5901/swagger` | 5901 | Documentación Interactiva |
 | **Base de Datos** | `localhost:5902` | 5902 | PostgreSQL (admin/admin) |
 
 ---

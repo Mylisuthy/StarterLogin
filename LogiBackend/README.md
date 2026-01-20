@@ -6,6 +6,7 @@ Este servidor .NET 9.0 orquesta la seguridad y lógica de negocio.
 - **Puerto Host**: `5901`
 - **Puerto Interno**: `80`
 - **Endpoint Base**: `http://localhost:5901/api`
+- **Swagger UI**: `http://localhost:5901/swagger` (Documentación Interactiva)
 
 ---
 

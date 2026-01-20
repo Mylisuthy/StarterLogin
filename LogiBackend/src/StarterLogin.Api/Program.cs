@@ -54,6 +54,14 @@ builder.Services.AddSwaggerGen(c => {
             new string[] {}
         }
     });
+
+    // Incluir comentarios XML
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (System.IO.File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
 
 var app = builder.Build();
@@ -68,11 +76,12 @@ using (var scope = app.Services.CreateScope())
     await StarterLogin.Infrastructure.Persistence.DbInitializer.SeedAsync(context);
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Habilitar Swagger siempre para transparencia (solicitado por el usuario)
+app.UseSwagger();
+app.UseSwaggerUI(c => {
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "StarterLogin API V1");
+    c.RoutePrefix = "swagger"; // Acceso en /swagger
+});
 
 app.UseHttpsRedirection();
 
