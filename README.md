@@ -60,7 +60,7 @@ graph TD
 
 ## 🗺️ Mapa del Proyecto
 
-### 🟢 Backend (LogiBackend/src)
+### 🟢 Backend ([LogiBackend/README.md](file:///c:/Users/MSUTHY/Desktop/Login/StarterLogin/LogiBackend/README.md))
 
 | Capapa | Responsabilidad |
 | :--- | :--- |
@@ -69,7 +69,7 @@ graph TD
 | **StarterLogin.Infrastructure** | Implementa la persistencia de datos con Entity Framework Core (PostgreSQL), seguridad (BCrypt, JWT) y otros servicios externos. |
 | **StarterLogin.Api** | Capa de exposición. Define los controladores REST que sirven como puntos de entrada para el cliente. |
 
-### 🔵 Frontend (LogiFrontend/src)
+### 🔵 Frontend ([LogiFrontend/README.md](file:///c:/Users/MSUTHY/Desktop/Login/StarterLogin/LogiFrontend/README.md))
 
 | Directorio | Responsabilidad |
 | :--- | :--- |
