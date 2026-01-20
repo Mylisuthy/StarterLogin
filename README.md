@@ -60,16 +60,25 @@ graph TD
 
 ## 🗺️ Mapa del Proyecto
 
-### 🟢 Backend ([LogiBackend/README.md](file:///c:/Users/MSUTHY/Desktop/Login/StarterLogin/LogiBackend/README.md))
+### 🟡 Resumen Técnico (Docker)
+| Servicio | URL Local | Puerto Host | Notas |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | `http://localhost:5900` | 5900 | Interfaz de usuario (Vue 3) |
+| **Backend API** | `http://localhost:5901` | 5901 | Endpoint base: `/api` |
+| **Base de Datos** | `localhost:5902` | 5902 | PostgreSQL (admin/admin) |
 
-| Capapa | Responsabilidad |
+---
+
+### 🟢 Backend (Ver [Guía Detallada](./LogiBackend/README.md))
+
+| Capa | Responsabilidad |
 | :--- | :--- |
-| **StarterLogin.Domain** | Contiene las entidades de negocio (`User`), Value Objects y interfaces base. Es agnóstico a cualquier tecnología externa. |
-| **StarterLogin.Application** | Orquesta la lógica de negocio mediante comandos (`Commands`) y consultas (`Queries`). Maneja casos de uso como Login y Registro. |
-| **StarterLogin.Infrastructure** | Implementa la persistencia de datos con Entity Framework Core (PostgreSQL), seguridad (BCrypt, JWT) y otros servicios externos. |
-| **StarterLogin.Api** | Capa de exposición. Define los controladores REST que sirven como puntos de entrada para el cliente. |
+| **StarterLogin.Domain** | Entidades de negocio y lógica pura. |
+| **StarterLogin.Application** | Orquestación y casos de uso (MediatR). |
+| **StarterLogin.Infrastructure** | Datos (EF Core), Seguridad y JWT. |
+| **StarterLogin.Api** | Controladores y Endpoints REST. |
 
-### 🔵 Frontend ([LogiFrontend/README.md](file:///c:/Users/MSUTHY/Desktop/Login/StarterLogin/LogiFrontend/README.md))
+### 🔵 Frontend (Ver [Guía Detallada](./LogiFrontend/README.md))
 
 | Directorio | Responsabilidad |
 | :--- | :--- |

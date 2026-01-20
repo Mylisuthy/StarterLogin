@@ -1,8 +1,15 @@
-# 🛠️ Backend - Guía de Arquitectura y Tour del Servidor
+# 🛠️ Backend - Guía Técnica
 
-Este componente es el núcleo de procesamiento de **StarterLogin**, construido con **.NET 9.0** y siguiendo los principios de **Clean Architecture**.
+Este servidor .NET 9.0 orquesta la seguridad y lógica de negocio.
 
-## 🏗️ Conceptos Clave para Aprender
+### 🌐 Ejecución (Docker)
+- **Puerto Host**: `5901`
+- **Puerto Interno**: `80`
+- **Endpoint Base**: `http://localhost:5901/api`
+
+---
+
+## 🏗️ Conceptos Clave
 
 1.  **Clean Architecture**: El código se organiza en capas concéntricas. La regla de oro es que las dependencias siempre apuntan hacia adentro (hacia el **Dominio**).
 2.  **CQRS (MediatR)**: Separamos las "Consultas" (Queries) de las "Acciones" (Commands). Esto evita que los controladores tengan lógica compleja.

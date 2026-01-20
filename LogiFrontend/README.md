@@ -1,8 +1,15 @@
-# 🎨 Frontend - Guía de Desarrollo e Interfaz Moderna
+# 🎨 Frontend - Guía Técnica
 
-El frontend de **StarterLogin** es una Single Page Application (SPA) ultra-rápida construida con **Vue 3** y **Vite**.
+Interfaz moderna construida con Vue 3 para una experiencia de usuario fluida.
 
-## 🏗️ Conceptos Clave para Aprender
+### 🌐 Ejecución (Docker)
+- **Puerto Host**: `5900`
+- **Puerto Interno**: `80`
+- **URL de Acceso**: `http://localhost:5900`
+
+---
+
+## 🏗️ Conceptos Clave
 
 1.  **Composition API (Script Setup)**: Es la forma moderna de Vue para organizar lógica. Más legible y eficiente.
 2.  **Estado Global (Pinia)**: Usamos "Stores" para que la información del usuario esté disponible en cualquier página sin pasar "props" infinitas.
