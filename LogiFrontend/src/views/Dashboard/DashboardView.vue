@@ -23,15 +23,8 @@
 <script setup lang="ts">
 import Navbar from '../../components/Navbar.vue';
 import { useAuthStore } from '../../stores/auth';
-import { useRouter } from 'vue-router';
 
 const auth = useAuthStore();
-const router = useRouter();
-
-const handleLogout = () => {
-  auth.logout();
-  router.push('/login');
-};
 </script>
 
 <style scoped>
