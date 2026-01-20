@@ -141,5 +141,31 @@ docker-compose up --build
 
 ---
 
+## 🛠️ Comandos Útiles (Useful Commands)
+
+### 🐳 Docker & Despliegue
+- `docker-compose up --build`: Construye y levanta todo el sistema.
+- `docker-compose down -v`: Borra todo y **limpia la base de datos**. Útil para resetear seeds.
+- `docker logs -f starterlogin-backend-1`: Ver logs del servidor en tiempo real.
+
+### 🛡️ Backend (.NET)
+- `dotnet watch --project LogiBackend/src/StarterLogin.Api`: Inicia con auto-recarga.
+- `dotnet ef migrations add <Nombre> --project LogiBackend/src/StarterLogin.Infrastructure --startup-project LogiBackend/src/StarterLogin.Api`: Crea una migración.
+- `dotnet ef database update --project LogiBackend/src/StarterLogin.Infrastructure --startup-project LogiBackend/src/StarterLogin.Api`: Aplica cambios a la DB.
+
+### 🎨 Frontend (Vue)
+- `npm run dev`: Servidor de desarrollo rápido con HMR.
+- `npm run build`: Genera archivos optimizados para producción.
+
+---
+
+## 💡 Consejos Pro
+
+- **Limpieza de Caché**: Si Docker se comporta extraño, usa `docker system prune` (Cuidado: borra todo lo que no uses).
+- **Puertos**: Si cambias los puertos en `docker-compose.yml`, recuerda actualizar el `baseURL` en `LogiFrontend/src/api/axios.ts`.
+- **Transparencia**: Usa la interfaz de **Swagger** (`/swagger`) para probar los endpoints sin necesidad de usar el frontend.
+
+---
+
 ## 📄 Licencia
 Este proyecto está bajo la licencia MIT.

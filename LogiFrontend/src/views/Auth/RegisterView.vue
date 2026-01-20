@@ -85,7 +85,7 @@ const handleRegister = async () => {
     });
     router.push('/login');
   } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Error al registrar usuario';
+    error.value = err.friendlyMessage || 'Error al registrar usuario';
   } finally {
     loading.value = false;
   }

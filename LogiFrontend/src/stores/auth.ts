@@ -51,7 +51,7 @@ export const useAuthStore = defineStore('auth', {
 
                 return true;
             } catch (err: any) {
-                this.error = err.response?.data?.detail || 'Error en el inicio de sesión';
+                this.error = err.friendlyMessage || 'Error en el inicio de sesión';
                 const toast = useToastStore();
                 toast.show(this.error!, 'error');
                 return false;
