@@ -111,7 +111,13 @@ docker-compose up --build
 
 ### Ejecución Manual
 1.  **Base de Datos**: Asegúrate de tener PostgreSQL corriendo y actualiza el `appsettings.json`.
-2.  **Backend**:
+2.  **Migraciones**: Al cambiar de SQL Server a PostgreSQL, es necesario regenerar las migraciones:
+    ```bash
+    cd LogiBackend/src/StarterLogin.Infrastructure
+    dotnet ef migrations add InitialPostgres --startup-project ../StarterLogin.Api
+    dotnet ef database update --startup-project ../StarterLogin.Api
+    ```
+3.  **Backend**:
     ```bash
     cd LogiBackend/src/StarterLogin.Api
     dotnet run
