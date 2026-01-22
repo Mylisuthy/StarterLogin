@@ -24,7 +24,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --primary: #f8fafc;
     --primary-light: #f1f5f9;
     --background: #020617;
@@ -34,6 +34,17 @@
     --glass-bg: rgba(15, 23, 42, 0.8);
     --glass-border: rgba(255, 255, 255, 0.1);
   }
+}
+
+:root.dark {
+  --primary: #f8fafc;
+  --primary-light: #f1f5f9;
+  --background: #020617;
+  --surface: #0f172a;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --glass-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 * {

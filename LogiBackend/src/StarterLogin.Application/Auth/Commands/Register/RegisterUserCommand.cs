@@ -36,7 +36,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, A
         // 1. Validar si ya existe
         var existingUser = await _unitOfWork.Users.GetByEmailAsync(Email.Create(request.Email));
         if (existingUser != null)
-            throw new Common.Exceptions.ValidationException("El correo electrónico ya se encuentra registrado por otro usuario.");
+            throw new StarterLogin.Application.Common.Exceptions.ValidationException("El correo electrónico ya se encuentra registrado por otro usuario.");
 
         // 2. Hashear password y crear dominio
         var passwordHash = PasswordHash.Create(_passwordHasher.Hash(request.Password));

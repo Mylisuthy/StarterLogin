@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<PokemonCard> Cards => Set<PokemonCard>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

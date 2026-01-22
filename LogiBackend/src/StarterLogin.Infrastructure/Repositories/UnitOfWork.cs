@@ -7,6 +7,7 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
     private IUserRepository? _users;
+    private IPokemonCardRepository? _cards;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -14,6 +15,7 @@ public class UnitOfWork : IUnitOfWork
     }
 
     public IUserRepository Users => _users ??= new UserRepository(_context);
+    public IPokemonCardRepository Cards => _cards ??= new PokemonCardRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {
