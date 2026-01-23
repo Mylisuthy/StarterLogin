@@ -1,129 +1,133 @@
-# StarterLogin - Sistema de Autenticación Empresarial
+# 🎥 StarterLogin: Enterprise Media Streaming Platform
 
-Este proyecto es una solución robusta de autenticación construida con tecnologías de vanguardia, diseñada bajo principios de **Clean Architecture** y modularidad. Proporciona una base sólida para la gestión de usuarios, seguridad JWT y una interfaz de usuario moderna.
+[![.NET 9](https://img.shields.io/badge/.NET-9.0-512bd4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.0-42b883?logo=vuedotjs)](https://vuejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-latest-336791?logo=postgresql)](https://www.postgresql.org/)
+[![Architecture](https://img.shields.io/badge/Architecture-Clean-blue)](#)
 
-## 🚀 Tecnologías Core
-
-- **Backend**: .NET 9.0 (C#)
-- **Base de Datos**: PostgreSQL
-- **Arquitectura**: Clean Architecture
-- **Patrón de Mensajería**: MediatR (CQRS Lite)
-- **Frontend**: Vue 3 + Vite + TypeScript
-- **Gestión de Estado**: Pinia
-- **Almacenamiento**: Cloudinary (Imágenes y Videos)
-- **Caché**: MemoryCache (L1)
+Una plataforma de streaming multimedia de alto rendimiento construida para la **escalabilidad masiva** y la **estabilidad empresarial**. Diseñada bajo los principios de **Clean Architecture**, **DDD** (Domain-Driven Design) y **CQRS**, esta solución ofrece una base sólida para gestionar millones de usuarios y peticiones concurrentes.
 
 ---
 
-## 📊 Arquitectura y Flujo (UML)
+## 🏗️ Stack Tecnológico de Alto Rendimiento
 
-### Diagrama de Secuencia (Login)
-Este diagrama describe la interacción entre componentes durante el proceso de autenticación.
+| Capa | Tecnologías | Propósito |
+| :--- | :--- | :--- |
+| **Edge / CDN** | Cloudinary CDN | Entrega de contenido multimedia de baja latencia a nivel global. |
+| **API Layer** | .NET 9.0 Web API | Core de alto rendimiento con procesamiento asíncrono nativo. |
+| **Data Orchestration** | MediatR (CQRS) | Desacoplamiento total de comandos y consultas para escalado independiente. |
+| **Persistence** | PostgreSQL | Almacenamiento relacional robusto con soporte para particionamiento. |
+| **Caching Tier** | Redis (L2) & MemoryCache (L1) | Estrategia de caché distribuida para reducir la carga en la DB. |
+| **Frontend** | Vue 3 + Vite + Pinia | Interfaz reactiva optimizada para una experiencia de usuario fluida. |
 
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant F as Frontend (Vue/Pinia)
-    participant A as API (.NET Controller)
-    participant B as Application (MediatR Handler)
-    participant I as Infrastructure (DB/Security)
-    participant D as Database (PostgreSQL)
+---
 
-    U->>F: Ingresa credenciales (Click Login)
-    F->>A: POST /api/auth/login
-    A->>B: Envia LoginUserQuery
-    B->>I: Validar Usuario/Password
-    I->>D: SELECT user FROM Users
-    D-->>I: User Data
-    I-->>B: Password Valid/Invalid
-    B->>I: Generar JWT Token
-    I-->>B: Token String
-    B-->>A: AuthResponse (Token + UserData)
-    A-->>F: 200 OK + AuthResponse
-    F->>U: Redirige a Dashboard
-```
+## 📊 Arquitectura de Grado Superior
 
-### Proceso de Carga Multimedia (Cloudinary)
-```mermaid
-graph LR
-    Admin[Administrador] --> API[MediaController.Upload]
-    API --> Cloud["Cloudinary Service"]
-    Cloud --> DB["PostgreSQL (Metadata)"]
-    Cloud -.-> CDN["Cloudinary CDN (File)"]
-```
+### 🌐 Infraestructura para Millones de Usuarios
+Este diagrama describe cómo el sistema escala horizontalmente mediante el uso de capas de caché y distribución de carga.
 
-### Control de Acceso por Edad (Parental Control)
-```mermaid
-sequenceDiagram
-    participant User
-    participant API as MediaController
-    participant DB as Database
-
-    User->>API: GET /api/media/{id}
-    API->>DB: Get Content & User BirthDate
-    DB-->>API: Content Rating & User Data
-    alt Rating is R/18+
-        API->>API: Calculate Age
-        alt Age < 18
-            API-->>User: 403 Forbidden (Restringido)
-        else Age >= 18
-            API-->>User: 200 OK (Contenido)
-        end
-    else Rating is G/PG
-        API-->>User: 200 OK (Contenido)
-    end
-```
-
-### Arquitectura de Capas (Multimedia Extension)
 ```mermaid
 graph TD
-    UI[Frontend / Clients] --> API[LogiBackend.Api]
-    API --> APP[LogiBackend.Application]
-    APP --> DOM[LogiBackend.Domain]
-    INF[LogiBackend.Infrastructure] -.-> APP
-    INF -.-> DOM
-    CLOUD[Cloudinary API] -.-> INF
+    User((Usuario Final)) --> DNS[Cloudflare / DNS]
+    DNS --> CDN[Cloudinary CDN - Video/Assets]
+    DNS --> LB[Load Balancer]
+    
+    subgraph "Application Cluster"
+        LB --> API1[API Node 1]
+        LB --> API2[API Node 2]
+        LB --> APIn[API Node N]
+    end
+
+    subgraph "Cache Layer"
+        API1 & API2 & APIn --> Redis[(Redis Cluster - L2)]
+    end
+
+    subgraph "Data Layer"
+        Redis --- DB_Master[(PostgreSQL Master)]
+        DB_Master --- DB_Slave[(PostgreSQL Read Replica)]
+    end
+
+    API1 & API2 & APIn --> Cloudinary[Cloudinary API]
 ```
 
-### Diagrama de Entidad-Relación (ER)
-Este diagrama describe la estructura de la base de datos PostgreSQL, incluyendo la estrategia de **Table Per Hierarchy (TPH)** para el contenido multimedia y las relaciones de muchos a muchos.
+### 🧬 Modelo de Datos Refinado (ER)
+Estructura optimizada para consultas masivas, utilizando **TPH (Table Per Hierarchy)** para contenido y relaciones densas para historial y favoritos.
 
 ```mermaid
 erDiagram
-    USERS ||--o{ USER_ROLES : "has"
-    ROLES ||--o{ USER_ROLES : "assigned_to"
-    USERS ||--o{ USER_MEDIA_HISTORY : "watching_progress"
-    USERS ||--o{ USER_FAVORITES : "saved_list"
+    USERS ||--o{ USER_ROLES : "possesses"
+    ROLES ||--o{ USER_ROLES : "assigned"
+    
+    USERS ||--o{ USER_MEDIA_HISTORY : "tracks"
+    USERS ||--o{ USER_FAVORITES : "curates"
     
     GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
-    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "referenced_in"
-    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "referenced_in"
+    
+    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "logged_in"
+    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "bookmarked"
     
     MEDIA_CONTENTS ||--o{ SEASONS : "contains"
     SEASONS ||--o{ EPISODES : "contains"
     
     MEDIA_CONTENTS {
-        Guid Id
-        string Discriminator "Movie/Series/Doc"
-        string Title
+        Guid Id PK
+        string Discriminator "TPH: Movie/Series/Doc"
+        string Title "INDEXED"
         string Description
         string ImageUrl
         string VideoUrl
-        string Rating
+        string Rating "PG/R/G"
+        Guid GenreId FK
     }
     
     USERS {
-        Guid Id
-        string UserName
-        string Email
+        Guid Id PK
+        string UserName "INDEXED"
+        string Email "UNIQUE"
         datetime BirthDate
         string Sex
     }
 
     GENRES {
-        Guid Id
-        string Name
+        Guid Id PK
+        string Name "UNIQUE"
     }
+
+    USER_MEDIA_HISTORY {
+        Guid Id PK
+        Guid UserId FK
+        Guid ContentId FK
+        datetime LastWatched
+        long ProgressTicks
+    }
+```
+
+### ⚡ Ciclo de Vida de una Petición (Escalabilidad)
+Cómo MediatR y el Pipeline se encargan de la validación y el logging antes de tocar el Dominio.
+
+```mermaid
+sequenceDiagram
+    participant C as Client (Vue)
+    participant G as Gateway/API
+    participant M as MediatR Pipeline
+    participant H as Handler (Application)
+    participant R as Redis (Cache)
+    participant D as DB (Postgres)
+
+    C->>G: Request Content Data
+    G->>M: Send Request
+    M->>M: Validate & Log
+    M->>H: Execute Handle()
+    H->>R: Try Get from Cache
+    alt Cache Hit
+        R-->>H: Data (Fast)
+    else Cache Miss
+        H->>D: DB Query (Primary Keys)
+        D-->>H: Data
+        H->>R: Populate Cache for Next User
+    end
+    H-->>C: Optimized Response
 ```
 
 ### Clase de Dominio e Herencia (DDD)
@@ -206,6 +210,22 @@ classDiagram
     Series "1" *-- "many" Season
     Season "1" *-- "many" Episode
 ```
+
+---
+
+## 🚀 Estrategia para Millones de Usuarios
+
+Para soportar una carga de **millones de usuarios activos**, la arquitectura implementa y recomienda los siguientes patrones:
+
+1.  **Read Replicas (PostgreSQL)**: Separación de tráfico de lectura (90%) y escritura (10%). Las consultas de catálogo se dirigen a nodos de solo lectura.
+2.  **Multilevel Caching**: 
+    - **L1 (MemoryCache)**: Local en el nodo API para objetos estáticos (Géneros, Configuración).
+    - **L2 (Redis)**: Caché distribuido para sesiones de usuario y metadatos de contenido popular.
+3.  **Database Indexing & Partitioning**: 
+    - Índices B-Tree en columnas de búsqueda frecuente (`Title`, `Email`).
+    - Sugerencia de Particionamiento por `CreatedAt` para la tabla `USER_MEDIA_HISTORY` para mantener el rendimiento a pesar de miles de millones de registros.
+4.  **Async Everything**: Uso intensivo de `Task/await` en .NET para no bloquear hilos del pool, permitiendo miles de peticiones simultáneas por nodo.
+5.  **CDN-First Delivery**: El tráfico pesado de video no toca nuestros servidores; Cloudinary CDN entrega el contenido desde el nodo más cercano al usuario.
 
 ---
 

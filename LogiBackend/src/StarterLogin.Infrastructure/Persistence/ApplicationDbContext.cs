@@ -13,11 +13,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
-<<<<<<< HEAD
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
-    public DbSet<MagicCard> MagicCards => Set<MagicCard>();
-=======
-    public DbSet<PokemonCard> Cards => Set<PokemonCard>();
+
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<MediaContent> MediaContents => Set<MediaContent>();
     public DbSet<Movie> Movies => Set<Movie>();
@@ -27,7 +24,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<Episode> Episodes => Set<Episode>();
     public DbSet<UserMediaHistory> UserMediaHistories => Set<UserMediaHistory>();
     public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
->>>>>>> origin/test
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

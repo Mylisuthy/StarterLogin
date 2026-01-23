@@ -19,7 +19,7 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IPokemonCardRepository, PokemonCardRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IMediaContentRepository, MediaContentRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IUserMediaRepository, UserMediaRepository>();
@@ -27,7 +27,6 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddScoped<IImageService, CloudinaryService>();
 
         return services;
     }

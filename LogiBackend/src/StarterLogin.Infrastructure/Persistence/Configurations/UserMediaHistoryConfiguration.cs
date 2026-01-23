@@ -21,5 +21,8 @@ public class UserMediaHistoryConfiguration : IEntityTypeConfiguration<UserMediaH
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(h => new { h.UserId, h.MediaContentId }).IsUnique();
+
+        // High Scale Index for "Continue Watching" and user lookups
+        builder.HasIndex(h => h.UserId);
     }
 }
