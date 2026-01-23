@@ -86,81 +86,109 @@ graph TD
 ```
 
 ### Diagrama de Entidad-Relación (ER)
+Este diagrama describe la estructura de la base de datos PostgreSQL, incluyendo la estrategia de **Table Per Hierarchy (TPH)** para el contenido multimedia y las relaciones de muchos a muchos.
+
 ```mermaid
 erDiagram
-    USER ||--o{ USER_ROLE : "has"
-    ROLE ||--o{ USER_ROLE : "assigned_to"
-    USER ||--o{ USER_MEDIA_HISTORY : "tracks"
-    USER ||--o{ USER_FAVORITE : "likes"
-    GENRE ||--o{ MEDIA_CONTENT : "categorizes"
-    MEDIA_CONTENT ||--o{ USER_MEDIA_HISTORY : "recorded_in"
-    MEDIA_CONTENT ||--o{ USER_FAVORITE : "added_to"
-    SERIES ||--o{ SEASON : "contains"
-    SEASON ||--o{ EPISODE : "contains"
+    USERS ||--o{ USER_ROLES : "has"
+    ROLES ||--o{ USER_ROLES : "assigned_to"
+    USERS ||--o{ USER_MEDIA_HISTORY : "watching_progress"
+    USERS ||--o{ USER_FAVORITES : "saved_list"
     
-    MEDIA_CONTENT {
+    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
+    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "referenced_in"
+    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "referenced_in"
+    
+    MEDIA_CONTENTS ||--o{ SEASONS : "contains"
+    SEASONS ||--o{ EPISODES : "contains"
+    
+    MEDIA_CONTENTS {
         Guid Id
+        string Discriminator "Movie/Series/Doc"
         string Title
         string Description
-        string ContentType
+        string ImageUrl
+        string VideoUrl
         string Rating
     }
-    USER {
+    
+    USERS {
         Guid Id
         string UserName
+        string Email
         datetime BirthDate
         string Sex
     }
-    GENRE {
+
+    GENRES {
         Guid Id
         string Name
     }
-    SEASON {
-        Guid Id
-        int Number
-    }
-    EPISODE {
-        Guid Id
-        int Number
-        string Title
-    }
 ```
 
-### Clase de Dominio e Herencia
+### Clase de Dominio e Herencia (DDD)
+Diagrama detallado de la jerarquía de objetos de dominio. Se han incluido todas las propiedades para evitar cajas vacías y asegurar la comprensión total del modelo.
+
 ```mermaid
 classDiagram
+    direction LR
     class BaseEntity {
         <<abstract>>
         +Guid Id
         +DateTime CreatedAt
         +DateTime? UpdatedAt
+        #MarkAsUpdated()
     }
+    
     class User {
         +string UserName
         +Email Email
         +DateTime? BirthDate
         +string? Sex
-        +List~Role~ Roles
+        +IReadOnlyCollection~Role~ Roles
+        +UpdateProfile()
+        +AddRole()
     }
+    
     class MediaContent {
         <<abstract>>
         +string Title
+        +string Description
+        +string? ImageUrl
+        +string? VideoUrl
+        +TimeSpan? Duration
         +string? Rating
         +Guid GenreId
-        +Genre Genre
     }
+    
+    class Movie {
+        +Create()
+        +Update()
+    }
+    
     class Series {
-        +List~Season~ Seasons
+        +IReadOnlyCollection~Season~ Seasons
+        +AddSeason()
     }
+    
+    class Documentary {
+        +Create()
+        +Update()
+    }
+    
     class Season {
         +int Number
+        +string? Title
         +Guid SeriesId
-        +List~Episode~ Episodes
+        +IReadOnlyCollection~Episode~ Episodes
+        +AddEpisode()
     }
+    
     class Episode {
         +int Number
         +string Title
-        +Guid SeasonId
+        +string? VideoUrl
+        +TimeSpan? Duration
     }
 
     BaseEntity <|-- User
@@ -168,11 +196,12 @@ classDiagram
     BaseEntity <|-- Genre
     BaseEntity <|-- Season
     BaseEntity <|-- Episode
+    
     MediaContent <|-- Movie
     MediaContent <|-- Series
     MediaContent <|-- Documentary
 
-    User "many" -- "many" Role
+    User "many" o-- "many" Role : UserRoles
     MediaContent "many" o-- "1" Genre
     Series "1" *-- "many" Season
     Season "1" *-- "many" Episode
