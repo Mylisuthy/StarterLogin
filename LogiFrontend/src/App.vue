@@ -8,8 +8,17 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import ToastContainer from './components/ToastContainer.vue';
-// Main entry point
+import { IdleService } from './services/idle';
+
+onMounted(() => {
+  IdleService.start();
+});
+
+onUnmounted(() => {
+  IdleService.stop();
+});
 </script>
 
 <style>

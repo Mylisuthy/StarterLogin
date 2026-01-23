@@ -6,6 +6,7 @@ using StarterLogin.Domain.Interfaces;
 using StarterLogin.Infrastructure.Persistence;
 using StarterLogin.Infrastructure.Repositories;
 using StarterLogin.Infrastructure.Security;
+using StarterLogin.Infrastructure.Services;
 
 namespace StarterLogin.Infrastructure;
 
@@ -18,7 +19,7 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IPokemonCardRepository, PokemonCardRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IMediaContentRepository, MediaContentRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<IUserMediaRepository, UserMediaRepository>();

@@ -496,6 +496,9 @@ pnpm-debug.log*
 .vscode/
 .idea/
 *.swp
+<<<<<<< HEAD
+.gemini/
+=======
 *.swo
 
 # Configuración sensible
@@ -504,3 +507,4 @@ LogiBackend/src/StarterLogin.Api/appsettings.Development.json
 LogiFrontend/.env
 LogiFrontend/.env.development
 LogiFrontend/.env.production
+>>>>>>> origin/test

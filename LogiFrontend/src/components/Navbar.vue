@@ -11,6 +11,7 @@
     </div>
     
     <div class="d-flex align-items-center gap-2 gap-md-4">
+      <router-link to="/gallery" class="text-white text-decoration-none fw-semibold d-none d-md-block">Galería ✨</router-link>
       <router-link to="/profile" class="user-pill d-flex align-items-center gap-2 text-decoration-none">
         <div class="user-avatar-sm">{{ userInitials }}</div>
         <div class="user-meta d-none d-md-block">

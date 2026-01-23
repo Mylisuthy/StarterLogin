@@ -12,6 +12,7 @@ interface User {
 interface AuthState {
     user: User | null;
     token: string | null;
+    refreshToken: string | null;
     loading: boolean;
     error: string | null;
 }
@@ -20,6 +21,7 @@ export const useAuthStore = defineStore('auth', {
     state: (): AuthState => ({
         user: JSON.parse(localStorage.getItem('user') || 'null'),
         token: localStorage.getItem('auth_token'),
+        refreshToken: localStorage.getItem('refresh_token'),
         loading: false,
         error: null,
     }),
@@ -36,6 +38,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const { data } = await api.post('/auth/login', credentials);
                 this.token = data.token;
+                this.refreshToken = data.refreshToken;
                 this.user = {
                     id: data.id,
                     userName: data.userName,
@@ -44,6 +47,7 @@ export const useAuthStore = defineStore('auth', {
                 };
 
                 localStorage.setItem('auth_token', this.token!);
+                localStorage.setItem('refresh_token', this.refreshToken!);
                 localStorage.setItem('user', JSON.stringify(this.user));
 
                 const toast = useToastStore();
@@ -60,12 +64,34 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
+        async silentRefresh() {
+            if (!this.refreshToken) return false;
+
+            try {
+                // Usamos fetch directo o axios sin interceptors para evitar bucle infinito si falla
+                const { data } = await api.post('/auth/refresh', { token: this.refreshToken });
+
+                this.token = data.token;
+                this.refreshToken = data.refreshToken;
+
+                localStorage.setItem('auth_token', this.token!);
+                localStorage.setItem('refresh_token', this.refreshToken!);
+
+                return true;
+            } catch (error) {
+                this.logout();
+                return false;
+            }
+        },
+
         logout() {
             const toast = useToastStore();
             toast.show('Sesión cerrada correctamente', 'info');
             this.user = null;
             this.token = null;
+            this.refreshToken = null;
             localStorage.removeItem('auth_token');
+            localStorage.removeItem('refresh_token');
             localStorage.removeItem('user');
         }
     }

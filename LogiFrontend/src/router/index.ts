@@ -23,6 +23,11 @@ const router = createRouter({
         },
         {
             path: '/gallery',
+<<<<<<< HEAD
+            component: () => import('../views/Gallery/GalleryView.vue'),
+            meta: { requiresAuth: true }
+        },
+=======
             component: () => import('../views/GalleryView.vue'),
             meta: { requiresAuth: true }
         },
@@ -31,6 +36,7 @@ const router = createRouter({
             component: () => import('../views/Admin/CardDashboardView.vue'),
             meta: { requiresAuth: true, requiresAdmin: true }
         },
+>>>>>>> origin/test
     ]
 });
 

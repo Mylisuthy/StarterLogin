@@ -13,7 +13,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
-    public DbSet<PokemonCard> Cards => Set<PokemonCard>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     public DbSet<Genre> Genres => Set<Genre>();
     public DbSet<MediaContent> MediaContents => Set<MediaContent>();
     public DbSet<Movie> Movies => Set<Movie>();

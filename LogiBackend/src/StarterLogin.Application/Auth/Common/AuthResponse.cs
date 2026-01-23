@@ -5,5 +5,6 @@ public record AuthResponse(
     string UserName,
     string Email,
     string Token,
+    string RefreshToken,
     IEnumerable<string> Roles
 );

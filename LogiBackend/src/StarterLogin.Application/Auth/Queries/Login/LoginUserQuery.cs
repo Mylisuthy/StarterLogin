@@ -40,14 +40,20 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, AuthRespons
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash.Value))
             throw new StarterLogin.Application.Common.Exceptions.ValidationException("La contraseña ingresada es incorrecta.");
 
-        // 3. Generar Token
+        // 3. Generar Token y Refresh Token
         var token = _jwtTokenGenerator.GenerateToken(user);
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken(user);
+
+        // 4. Guardar Refresh Token
+        await _unitOfWork.RefreshTokens.AddAsync(refreshToken);
+        await _unitOfWork.SaveChangesAsync();
 
         return new AuthResponse(
             user.Id,
             user.UserName,
             user.Email.Value,
             token,
+            refreshToken.Token,
             user.Roles.Select(r => r.Name)
         );
     }

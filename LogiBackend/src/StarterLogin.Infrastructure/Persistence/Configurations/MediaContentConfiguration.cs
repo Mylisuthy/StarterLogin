@@ -28,5 +28,9 @@ public class MediaContentConfiguration : IEntityTypeConfiguration<MediaContent>
             .HasValue<Movie>("Movie")
             .HasValue<Series>("Series")
             .HasValue<Documentary>("Documentary");
+
+        // High Scale Indexes
+        builder.HasIndex(m => m.Title);
+        builder.HasIndex(m => m.GenreId);
     }
 }

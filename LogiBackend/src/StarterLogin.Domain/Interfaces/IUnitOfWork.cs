@@ -5,7 +5,7 @@ namespace StarterLogin.Domain.Interfaces;
 public interface IUnitOfWork
 {
     IUserRepository Users { get; }
-    IPokemonCardRepository Cards { get; }
+    IRefreshTokenRepository RefreshTokens { get; }
     IMediaContentRepository Media { get; }
     IGenreRepository Genres { get; }
     IUserMediaRepository UserMedia { get; }
