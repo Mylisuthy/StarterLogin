@@ -47,9 +47,9 @@ sequenceDiagram
 ```mermaid
 graph LR
     Admin[Administrador] --> API[MediaController.Upload]
-    API --> Cloud[Cloudinary Service]
-    Cloud --> DB[PostgreSQL (Metadata)]
-    Cloud -.-> CDN[Cloudinary CDN (File)]
+    API --> Cloud["Cloudinary Service"]
+    Cloud --> DB["PostgreSQL (Metadata)"]
+    Cloud -.-> CDN["Cloudinary CDN (File)"]
 ```
 
 ### Control de Acceso por Edad (Parental Control)
@@ -64,9 +64,9 @@ sequenceDiagram
     DB-->>API: Content Rating & User Data
     alt Rating is R/18+
         API->>API: Calculate Age
-        if Age < 18
+        alt Age < 18
             API-->>User: 403 Forbidden (Restringido)
-        else
+        else Age >= 18
             API-->>User: 200 OK (Contenido)
         end
     else Rating is G/PG
