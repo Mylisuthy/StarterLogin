@@ -19,6 +19,10 @@ public static class DependencyInjection
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPokemonCardRepository, PokemonCardRepository>();
+        services.AddScoped<IMediaContentRepository, MediaContentRepository>();
+        services.AddScoped<IGenreRepository, GenreRepository>();
+        services.AddScoped<IUserMediaRepository, UserMediaRepository>();
+        services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

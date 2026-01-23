@@ -10,7 +10,8 @@ Este proyecto es una solución robusta de autenticación construida con tecnolog
 - **Patrón de Mensajería**: MediatR (CQRS Lite)
 - **Frontend**: Vue 3 + Vite + TypeScript
 - **Gestión de Estado**: Pinia
-- **Contenedores**: Docker & Docker Compose
+- **Almacenamiento**: Cloudinary (Imágenes y Videos)
+- **Caché**: MemoryCache (L1)
 
 ---
 
@@ -42,19 +43,56 @@ sequenceDiagram
     F->>U: Redirige a Dashboard
 ```
 
-### Arquitectura de Capas (Clean Architecture)
+### Proceso de Carga Multimedia (Cloudinary)
 ```mermaid
-graph TD
-    UI[Frontend / Clients] --> API[StarterLogin.Api]
-    API --> APP[StarterLogin.Application]
-    APP --> DOM[StarterLogin.Domain]
-    INF[StarterLogin.Infrastructure] -.-> APP
-    INF -.-> DOM
-    subgraph "Core"
-        APP
-        DOM
+graph LR
+    Admin[Administrador] --> API[MediaController.Upload]
+    API --> Cloud[Cloudinary Service]
+    Cloud --> DB[PostgreSQL (Metadata)]
+    Cloud -.-> CDN[Cloudinary CDN (File)]
+```
+
+### Control de Acceso por Edad (Parental Control)
+```mermaid
+sequenceDiagram
+    participant User
+    participant API as MediaController
+    participant DB as Database
+
+    User->>API: GET /api/media/{id}
+    API->>DB: Get Content & User BirthDate
+    DB-->>API: Content Rating & User Data
+    alt Rating is R/18+
+        API->>API: Calculate Age
+        if Age < 18
+            API-->>User: 403 Forbidden (Restringido)
+        else
+            API-->>User: 200 OK (Contenido)
+        end
+    else Rating is G/PG
+        API-->>User: 200 OK (Contenido)
     end
 ```
+
+### Arquitectura de Capas (Multimedia Extension)
+```mermaid
+graph TD
+    UI[Frontend / Clients] --> API[LogiBackend.Api]
+    API --> APP[LogiBackend.Application]
+    APP --> DOM[LogiBackend.Domain]
+    INF[LogiBackend.Infrastructure] -.-> APP
+    INF -.-> DOM
+    CLOUD[Cloudinary API] -.-> INF
+```
+
+---
+
+## 📽️ Nuevas Funcionalidades Multimedia
+- **Tipos de Contenido**: Soporte para Películas, Series y Documentales con herencia optimizada (TPH).
+- **Categorización**: Sistema de géneros dinámicos.
+- **Experiencia de Usuario**: Historial de reproducción (continuar viendo) y lista de favoritos.
+- **Búsqueda Proactiva**: Búsqueda por título y género con recomendaciones inteligentes.
+- **Seguridad**: Validación de edad automática para contenido restringido.
 
 ---
 
