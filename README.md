@@ -88,23 +88,41 @@ graph TD
 ### Diagrama de Entidad-Relación (ER)
 ```mermaid
 erDiagram
-    USER ||--o{ USER_ROLE : has
-    USER ||--o{ USER_MEDIA_HISTORY : tracks
-    USER ||--o{ USER_FAVORITE : likes
-    GENRE ||--o{ MEDIA_CONTENT : categorizes
-    MEDIA_CONTENT ||--o{ USER_MEDIA_HISTORY : recorded_in
-    MEDIA_CONTENT ||--o{ USER_FAVORITE : added_to
-    SERIES ||--o{ SEASON : contains
-    SEASON ||--o{ EPISODE : contains
+    USER ||--o{ USER_ROLE : "has"
+    ROLE ||--o{ USER_ROLE : "assigned_to"
+    USER ||--o{ USER_MEDIA_HISTORY : "tracks"
+    USER ||--o{ USER_FAVORITE : "likes"
+    GENRE ||--o{ MEDIA_CONTENT : "categorizes"
+    MEDIA_CONTENT ||--o{ USER_MEDIA_HISTORY : "recorded_in"
+    MEDIA_CONTENT ||--o{ USER_FAVORITE : "added_to"
+    SERIES ||--o{ SEASON : "contains"
+    SEASON ||--o{ EPISODE : "contains"
     
     MEDIA_CONTENT {
+        Guid Id
         string Title
         string Description
         string ContentType
+        string Rating
     }
     USER {
+        Guid Id
         string UserName
         datetime BirthDate
+        string Sex
+    }
+    GENRE {
+        Guid Id
+        string Name
+    }
+    SEASON {
+        Guid Id
+        int Number
+    }
+    EPISODE {
+        Guid Id
+        int Number
+        string Title
     }
 ```
 
@@ -115,18 +133,34 @@ classDiagram
         <<abstract>>
         +Guid Id
         +DateTime CreatedAt
+        +DateTime? UpdatedAt
+    }
+    class User {
+        +string UserName
+        +Email Email
+        +DateTime? BirthDate
+        +string? Sex
+        +List~Role~ Roles
     }
     class MediaContent {
         <<abstract>>
         +string Title
+        +string? Rating
         +Guid GenreId
+        +Genre Genre
     }
     class Series {
         +List~Season~ Seasons
     }
-    class User {
-        +string UserName
-        +DateTime? BirthDate
+    class Season {
+        +int Number
+        +Guid SeriesId
+        +List~Episode~ Episodes
+    }
+    class Episode {
+        +int Number
+        +string Title
+        +Guid SeasonId
     }
 
     BaseEntity <|-- User
@@ -137,6 +171,11 @@ classDiagram
     MediaContent <|-- Movie
     MediaContent <|-- Series
     MediaContent <|-- Documentary
+
+    User "many" -- "many" Role
+    MediaContent "many" o-- "1" Genre
+    Series "1" *-- "many" Season
+    Season "1" *-- "many" Episode
 ```
 
 ---
