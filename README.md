@@ -85,6 +85,60 @@ graph TD
     CLOUD[Cloudinary API] -.-> INF
 ```
 
+### Diagrama de Entidad-Relación (ER)
+```mermaid
+erDiagram
+    USER ||--o{ USER_ROLE : has
+    USER ||--o{ USER_MEDIA_HISTORY : tracks
+    USER ||--o{ USER_FAVORITE : likes
+    GENRE ||--o{ MEDIA_CONTENT : categorizes
+    MEDIA_CONTENT ||--o{ USER_MEDIA_HISTORY : recorded_in
+    MEDIA_CONTENT ||--o{ USER_FAVORITE : added_to
+    SERIES ||--o{ SEASON : contains
+    SEASON ||--o{ EPISODE : contains
+    
+    MEDIA_CONTENT {
+        string Title
+        string Description
+        string ContentType
+    }
+    USER {
+        string UserName
+        datetime BirthDate
+    }
+```
+
+### Clase de Dominio e Herencia
+```mermaid
+classDiagram
+    class BaseEntity {
+        <<abstract>>
+        +Guid Id
+        +DateTime CreatedAt
+    }
+    class MediaContent {
+        <<abstract>>
+        +string Title
+        +Guid GenreId
+    }
+    class Series {
+        +List~Season~ Seasons
+    }
+    class User {
+        +string UserName
+        +DateTime? BirthDate
+    }
+
+    BaseEntity <|-- User
+    BaseEntity <|-- MediaContent
+    BaseEntity <|-- Genre
+    BaseEntity <|-- Season
+    BaseEntity <|-- Episode
+    MediaContent <|-- Movie
+    MediaContent <|-- Series
+    MediaContent <|-- Documentary
+```
+
 ---
 
 ## 📽️ Nuevas Funcionalidades Multimedia
