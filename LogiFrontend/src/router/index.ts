@@ -23,9 +23,20 @@ const router = createRouter({
         },
         {
             path: '/gallery',
+<<<<<<< HEAD
             component: () => import('../views/Gallery/GalleryView.vue'),
             meta: { requiresAuth: true }
         },
+=======
+            component: () => import('../views/GalleryView.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/admin/cards',
+            component: () => import('../views/Admin/CardDashboardView.vue'),
+            meta: { requiresAuth: true, requiresAdmin: true }
+        },
+>>>>>>> origin/test
     ]
 });
 
@@ -34,6 +45,8 @@ router.beforeEach((to, _from, next) => {
 
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
         next('/login');
+    } else if (to.meta.requiresAdmin && !auth.user?.roles.includes('Admin')) {
+        next('/dashboard');
     } else if (to.meta.guest && auth.isAuthenticated) {
         next('/dashboard');
     } else {

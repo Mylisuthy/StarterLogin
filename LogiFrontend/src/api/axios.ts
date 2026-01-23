@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://localhost:7081/api', // Ajustar al puerto real del backend
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5901/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -19,6 +19,7 @@ api.interceptors.request.use((config) => {
 // Interceptor para manejo de errores global
 api.interceptors.response.use(
     (response) => response,
+<<<<<<< HEAD
     async (error) => {
         const originalRequest = error.config;
 
@@ -52,7 +53,37 @@ api.interceptors.response.use(
             const auth = useAuthStore();
             auth.logout();
             window.location.href = '/login';
+=======
+    (error) => {
+        let message = 'Ocurrió un error inesperado.';
+        let type = 'system'; // 'user' o 'system'
+
+        if (!error.response) {
+            // Error de Red (Servidor apagado o inaccesible)
+            message = 'No se pudo conectar con el servidor. Verifique que el Backend esté encendido (Puerto 5901).';
+            type = 'network';
+        } else {
+            const status = error.response.status;
+            const data = error.response.data;
+
+            if (status === 401) {
+                localStorage.removeItem('auth_token');
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+                message = 'Su sesión ha expirado. Por favor, ingrese de nuevo.';
+            } else if (data && data.detail) {
+                // Mensaje enviado por nuestro ExceptionHandlingMiddleware
+                message = data.detail;
+                type = status >= 400 && status < 500 ? 'user' : 'system';
+            }
+>>>>>>> origin/test
         }
+
+        // Adjuntamos el mensaje formateado al objeto de error para que la UI lo use
+        error.friendlyMessage = message;
+        error.errorType = type;
+
         return Promise.reject(error);
     }
 );

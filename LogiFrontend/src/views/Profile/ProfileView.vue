@@ -33,8 +33,8 @@
             <div class="info-value">{{ auth.user?.email }}</div>
           </div>
           <div class="info-group">
-            <label>ID de Usuario</label>
-            <div class="info-value small text-code">{{ auth.user?.id }}</div>
+            <label>Email Corporativo</label>
+            <div class="info-value">{{ auth.user?.email }}</div>
           </div>
         </div>
 

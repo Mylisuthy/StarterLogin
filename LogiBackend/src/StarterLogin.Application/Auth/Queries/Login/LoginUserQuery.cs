@@ -34,11 +34,11 @@ public class LoginUserQueryHandler : IRequestHandler<LoginUserQuery, AuthRespons
         // 1. Obtener usuario
         var user = await _unitOfWork.Users.GetByEmailAsync(Email.Create(request.Email));
         if (user == null)
-            throw new Exception("Invalid credentials.");
+            throw new StarterLogin.Application.Common.Exceptions.ValidationException("El correo electrónico no se encuentra registrado.");
 
         // 2. Verificar password
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash.Value))
-            throw new Exception("Invalid credentials.");
+            throw new StarterLogin.Application.Common.Exceptions.ValidationException("La contraseña ingresada es incorrecta.");
 
         // 3. Generar Token y Refresh Token
         var token = _jwtTokenGenerator.GenerateToken(user);

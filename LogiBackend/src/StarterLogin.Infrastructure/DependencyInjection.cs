@@ -15,10 +15,15 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPokemonCardRepository, PokemonCardRepository>();
+        services.AddScoped<IMediaContentRepository, MediaContentRepository>();
+        services.AddScoped<IGenreRepository, GenreRepository>();
+        services.AddScoped<IUserMediaRepository, UserMediaRepository>();
+        services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

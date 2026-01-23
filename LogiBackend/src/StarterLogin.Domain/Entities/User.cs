@@ -11,6 +11,8 @@ public class User : BaseEntity
     public Email Email { get; protected set; } = null!;
     public PasswordHash PasswordHash { get; protected set; } = null!;
     public bool IsActive { get; protected set; }
+    public DateTime? BirthDate { get; protected set; }
+    public string? Sex { get; protected set; }
     
     // DDD: Using a list for roles
     private readonly List<Role> _roles = new();
@@ -32,6 +34,13 @@ public class User : BaseEntity
             throw new ArgumentException("Username cannot be empty.");
 
         return new User(userName, email, passwordHash);
+    }
+
+    public void UpdateProfile(DateTime? birthDate, string? sex)
+    {
+        BirthDate = birthDate;
+        Sex = sex;
+        MarkAsUpdated();
     }
 
     public void AddRole(Role role)

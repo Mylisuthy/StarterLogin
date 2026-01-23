@@ -1,9 +1,14 @@
 <template>
   <nav class="glass-card m-3 p-3 d-flex justify-content-between align-items-center navbar-enterprise">
-    <router-link to="/dashboard" class="d-flex align-items-center gap-2 text-decoration-none text-current">
-      <div class="logo-box gradient-bg"></div>
-      <span class="fw-bold h5 mb-0 d-none d-sm-block">Portal Elite</span>
-    </router-link>
+    <div class="d-flex align-items-center gap-3">
+      <router-link to="/dashboard" class="d-flex align-items-center gap-2 text-decoration-none text-current">
+        <div class="logo-box gradient-bg"></div>
+        <span class="fw-bold h5 mb-0 d-none d-sm-block">Portal Elite</span>
+      </router-link>
+      <div class="v-divider"></div>
+      <router-link to="/gallery" class="nav-link-enterprise">Galería</router-link>
+      <router-link v-if="isAdmin" to="/admin/cards" class="nav-link-enterprise">Admin Cartas</router-link>
+    </div>
     
     <div class="d-flex align-items-center gap-2 gap-md-4">
       <router-link to="/gallery" class="text-white text-decoration-none fw-semibold d-none d-md-block">Galería ✨</router-link>
@@ -14,6 +19,15 @@
           <div class="text-muted extra-small">{{ auth.user?.roles[0] }}</div>
         </div>
       </router-link>
+      
+      <button @click="toggleDarkMode" class="btn-theme-toggle" :title="isDark ? 'Modo Claro' : 'Modo Noche'">
+        <svg v-if="!isDark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+        </svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5zM0 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 0 8zm13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zM2.343 2.343a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707L2.343 3.05a.5.5 0 0 1 0-.707zm9.193 9.193a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707l-1.414-1.414a.5.5 0 0 1 0-.707zm0-9.193a.5.5 0 0 1 0 .707L10.122 4.464a.5.5 0 0 1-.707-.707L10.829 2.343a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0z"/>
+        </svg>
+      </button>
       
       <div class="v-divider"></div>
       
@@ -35,7 +49,24 @@ import { useRouter } from 'vue-router';
 const auth = useAuthStore();
 const router = useRouter();
 
+const isAdmin = computed(() => auth.user?.roles.includes('Admin'));
 const userInitials = computed(() => auth.user?.userName.substring(0, 2).toUpperCase() || '??');
+
+const isDark = computed(() => {
+  return document.documentElement.classList.contains('dark');
+});
+
+const toggleDarkMode = () => {
+  if (document.documentElement.classList.contains('dark')) {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+    localStorage.setItem('theme', 'light');
+  } else {
+    document.documentElement.classList.remove('light');
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  }
+};
 
 const handleLogout = () => {
   auth.logout();
@@ -113,5 +144,35 @@ const handleLogout = () => {
 .btn-icon-danger:hover {
   background: rgba(239, 68, 68, 0.1);
   transform: scale(1.1);
+}
+
+.btn-theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.btn-theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: rotate(15deg);
+}
+
+.nav-link-enterprise {
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: var(--transition-smooth);
+}
+
+.nav-link-enterprise:hover, .router-link-active.nav-link-enterprise {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent);
 }
 </style>

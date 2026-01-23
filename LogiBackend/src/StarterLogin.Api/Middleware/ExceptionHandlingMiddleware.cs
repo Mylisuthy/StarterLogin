@@ -33,11 +33,13 @@ public class ExceptionHandlingMiddleware
     {
         context.Response.ContentType = "application/problem+json";
         
-        var statusCode = exception switch
+        var (statusCode, title) = exception switch
         {
-            ArgumentException => (int)HttpStatusCode.BadRequest,
-            UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
-            _ => (int)HttpStatusCode.InternalServerError
+            StarterLogin.Application.Common.Exceptions.ValidationException => ((int)HttpStatusCode.BadRequest, "Error de Validación (Usuario)"),
+            StarterLogin.Application.Common.Exceptions.AppException => ((int)HttpStatusCode.BadRequest, "Error de Aplicación"),
+            ArgumentException => ((int)HttpStatusCode.BadRequest, "Solicitud Incorrecta"),
+            UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Acceso No Autorizado"),
+            _ => ((int)HttpStatusCode.InternalServerError, "Error Interno del Sistema")
         };
 
         context.Response.StatusCode = statusCode;
@@ -45,10 +47,16 @@ public class ExceptionHandlingMiddleware
         var problemDetails = new ProblemDetails
         {
             Status = statusCode,
-            Title = "An error occurred while processing your request.",
+            Title = title,
             Detail = exception.Message,
             Instance = context.Request.Path
         };
+
+        // En desarrollo podemos añadir más detalle si es un error de sistema
+        if (statusCode == 500)
+        {
+            problemDetails.Extensions["debug_info"] = "Consulte los logs del servidor para más detalles.";
+        }
 
         var response = JsonSerializer.Serialize(problemDetails);
         await context.Response.WriteAsync(response);

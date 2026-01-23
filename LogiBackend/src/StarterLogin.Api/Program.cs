@@ -10,6 +10,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5900")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 // JWT Authentication Configuration
 var secretKey = builder.Configuration["JwtSettings:Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured.");
 builder.Services.AddAuthentication(options =>
@@ -54,6 +65,14 @@ builder.Services.AddSwaggerGen(c => {
             new string[] {}
         }
     });
+
+    // Incluir comentarios XML
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (System.IO.File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
 
 var app = builder.Build();
@@ -64,17 +83,45 @@ app.UseMiddleware<StarterLogin.Api.Middleware.ExceptionHandlingMiddleware>();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     var context = services.GetRequiredService<StarterLogin.Infrastructure.Persistence.ApplicationDbContext>();
-    await StarterLogin.Infrastructure.Persistence.DbInitializer.SeedAsync(context);
+    
+    int retries = 10;
+    while (retries > 0)
+    {
+        try
+        {
+            var passwordHasher = services.GetRequiredService<StarterLogin.Application.Common.Interfaces.IPasswordHasher>();
+            
+            logger.LogInformation("Attempting to migrate and seed database... (Retries left: {Retries})", retries);
+            await StarterLogin.Infrastructure.Persistence.DbInitializer.SeedAsync(context, passwordHasher);
+            logger.LogInformation("Database migrated and seeded successfully.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            retries--;
+            if (retries == 0)
+            {
+                logger.LogCritical(ex, "Could not migrate and seed database after multiple attempts.");
+                throw;
+            }
+            logger.LogWarning("Database not ready yet. Retrying in 3 seconds... Error: {Message}", ex.Message);
+            await Task.Delay(3000);
+        }
+    }
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Habilitar Swagger siempre para transparencia (solicitado por el usuario)
+app.UseSwagger();
+app.UseSwaggerUI(c => {
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "StarterLogin API V1");
+    c.RoutePrefix = "swagger"; // Acceso en /swagger
+});
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication(); // Añadido antes de Authorization
 app.UseAuthorization();

@@ -1,39 +1,43 @@
-version: '3.8'
-
 services:
   database:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:latest
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=YourStrong@Password
-      - MSSQL_PID=Developer
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=StarterLoginDb
     ports:
-      - "1433:1433"
+      - "5902:5432"
     volumes:
-      - sql_data:/var/opt/mssql
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d StarterLoginDb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./LogiBackend
       dockerfile: Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Server=database;Database=StarterLoginDb;User Id=sa;Password=YourStrong@Password;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Host=database;Database=StarterLoginDb;Username=postgres;Password=admin
       - JwtSettings__Secret=ThisIsAVerySecretKeyForJWTAuthentication2026!
       - JwtSettings__Issuer=StarterLoginApi
       - JwtSettings__Audience=StarterLoginFront
     ports:
-      - "5170:80"
+      - "5901:80"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./LogiFrontend
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "5900:80"
     depends_on:
       - backend
 
 volumes:
-  sql_data:
+  postgres_data:

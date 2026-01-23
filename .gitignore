@@ -480,6 +480,31 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# Vim temporary swap files
+# Production build
+dist/
+dist-ssr/
+*.local
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDEs
+.vscode/
+.idea/
 *.swp
+<<<<<<< HEAD
 .gemini/
+=======
+*.swo
+
+# Configuración sensible
+LogiBackend/src/StarterLogin.Api/appsettings.json
+LogiBackend/src/StarterLogin.Api/appsettings.Development.json
+LogiFrontend/.env
+LogiFrontend/.env.development
+LogiFrontend/.env.production
+>>>>>>> origin/test
