@@ -208,6 +208,8 @@ Diagrama detallado de la jerarquía de objetos de dominio. Se han incluido todas
 ```mermaid
 classDiagram
     direction LR
+    
+    %% Base Entity
     class BaseEntity {
         <<abstract>>
         +Guid Id
@@ -215,17 +217,48 @@ classDiagram
         +DateTime? UpdatedAt
         #MarkAsUpdated()
     }
-    
+
+    %% Value Objects
+    class Email {
+        <<ValueObject>>
+        +string Value
+        -Email()
+        +Create(string email)
+    }
+
+    class PasswordHash {
+        <<ValueObject>>
+        +string Value
+        -PasswordHash()
+        +Create(string hash)
+    }
+
+    %% User Aggregate
     class User {
         +string UserName
         +Email Email
+        +PasswordHash PasswordHash
+        +bool IsActive
         +DateTime? BirthDate
         +string? Sex
         +IReadOnlyCollection~Role~ Roles
-        +UpdateProfile()
-        +AddRole()
+        +Create(string userName, Email email, PasswordHash passwordHash)$
+        +UpdateProfile(DateTime? birthDate, string? sex)
+        +AddRole(Role role)
+        +RemoveRole(Role role)
+        +Deactivate()
+        +Activate()
+        +UpdatePassword(PasswordHash newPasswordHash)
     }
-    
+
+    class Role {
+        +string Name
+        +string Description
+        +Create(string name, string description)$
+        +UpdateDescription(string description)
+    }
+
+    %% Media Aggregate
     class MediaContent {
         <<abstract>>
         +string Title
@@ -233,54 +266,105 @@ classDiagram
         +string? ImageUrl
         +string? VideoUrl
         +TimeSpan? Duration
+        +DateTime? ReleaseDate
         +string? Rating
         +Guid GenreId
+        +Genre Genre
+        #MediaContent(...)
     }
-    
+
+    class Genre {
+        +string Name
+        +string? Description
+        +Create(string name, string? description)$
+        +Update(string name, string? description)
+    }
+
     class Movie {
-        +Create()
-        +Update()
+        +Create(...)$
+        +Update(...)
     }
-    
+
     class Series {
         +IReadOnlyCollection~Season~ Seasons
-        +AddSeason()
+        +Create(...)$
+        +Update(...)
+        +AddSeason(Season season)
     }
-    
+
     class Documentary {
-        +Create()
-        +Update()
+        +Create(...)$
+        +Update(...)
     }
-    
+
     class Season {
         +int Number
         +string? Title
         +Guid SeriesId
         +IReadOnlyCollection~Episode~ Episodes
-        +AddEpisode()
+        +Create(int number, Guid seriesId, string? title)$
+        +Update(int number, string? title)
+        +AddEpisode(Episode episode)
     }
-    
+
     class Episode {
         +int Number
         +string Title
+        +string Description
         +string? VideoUrl
         +TimeSpan? Duration
+        +Guid SeasonId
+        +Create(...)$
+        +Update(...)
     }
 
+    %% Pivot / Connection Entities
+    class UserFavorite {
+        +Guid UserId
+        +Guid MediaContentId
+        +UserFavorite(Guid userId, Guid mediaContentId)
+    }
+
+    class UserMediaHistory {
+        +Guid UserId
+        +Guid MediaContentId
+        +TimeSpan WatchedTime
+        +bool IsFinished
+        +UserMediaHistory(Guid userId, Guid mediaContentId, ...)
+        +UpdateProgress(TimeSpan watchedTime, bool isFinished)
+    }
+
+    %% Inheritance Relationships
     BaseEntity <|-- User
-    BaseEntity <|-- MediaContent
+    BaseEntity <|-- Role
     BaseEntity <|-- Genre
+    BaseEntity <|-- MediaContent
     BaseEntity <|-- Season
     BaseEntity <|-- Episode
-    
+    BaseEntity <|-- UserFavorite
+    BaseEntity <|-- UserMediaHistory
+
     MediaContent <|-- Movie
     MediaContent <|-- Series
     MediaContent <|-- Documentary
 
-    User "many" o-- "many" Role : UserRoles
-    MediaContent "many" o-- "1" Genre
-    Series "1" *-- "many" Season
-    Season "1" *-- "many" Episode
+    %% Composition & Aggregation
+    User *-- Email : Owns
+    User *-- PasswordHash : Owns
+    
+    User "1" o-- "many" Role : UserRoles
+    
+    MediaContent --> Genre : Has_One
+    
+    Series *-- Season : Contains_Many
+    Season *-- Episode : Contains_Many
+
+    %% Usage / Cross-Aggregate References
+    UserFavorite --> User : References
+    UserFavorite --> MediaContent : References
+    
+    UserMediaHistory --> User : References
+    UserMediaHistory --> MediaContent : References
 ```
 
 ---
