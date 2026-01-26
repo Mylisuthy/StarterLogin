@@ -90,7 +90,23 @@ Este diagrama describe la estructura de la base de datos PostgreSQL, incluyendo 
 
 ```mermaid
 erDiagram
-    %% --- 1. CORE USERS MODULE ---
+    %% --- 1. USER & ROLES CLUSTER (Top/Left isolated) ---
+    ROLES ||--o{ USER_ROLES : "assigned_to"
+    USERS ||--o{ USER_ROLES : "has_roles"
+
+    ROLES {
+        uuid Id PK
+        string Name
+        string Description
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    USER_ROLES {
+        uuid UserId FK, PK
+        uuid RoleId FK, PK
+    }
+
     USERS {
         uuid Id PK
         string UserName
@@ -103,7 +119,14 @@ erDiagram
         datetime UpdatedAt
     }
 
-    ROLES {
+    %% --- 2. MEDIA CLUSTER (Right side) ---
+    %% Define Media first so it's placed clearly
+    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
+    
+    MEDIA_CONTENTS ||--o{ SEASONS : "has_seasons"
+    SEASONS ||--o{ EPISODES : "has_episodes"
+
+    GENRES {
         uuid Id PK
         string Name
         string Description
@@ -111,40 +134,6 @@ erDiagram
         datetime UpdatedAt
     }
 
-    %% User Relationships
-    USERS ||--o{ USER_ROLES : "has_roles"
-    ROLES ||--o{ USER_ROLES : "assigned_to"
-
-    USER_ROLES {
-        uuid UserId FK, PK
-        uuid RoleId FK, PK
-    }
-
-    %% --- 2. INTERSECTION / PIVOT TABLES (The Bridge) ---
-    %% Placing these in the middle of code often helps layout engines center them
-    USER_FAVORITES {
-        uuid Id PK
-        uuid UserId FK
-        uuid MediaContentId FK
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-
-    USER_MEDIA_HISTORY {
-        uuid Id PK
-        uuid UserId FK
-        uuid MediaContentId FK
-        interval WatchedTime
-        boolean IsFinished
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-
-    %% Connecting Users to Pivot Tables
-    USERS ||--o{ USER_FAVORITES : "saves"
-    USERS ||--o{ USER_MEDIA_HISTORY : "watches"
-
-    %% --- 3. MEDIA MODULE ---
     MEDIA_CONTENTS {
         uuid Id PK
         string ContentType "Discriminator"
@@ -160,22 +149,6 @@ erDiagram
         datetime UpdatedAt
     }
 
-    GENRES {
-        uuid Id PK
-        string Name
-        string Description
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-
-    %% Connecting Media to Pivot Tables (The other side of the bridge)
-    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "favorited_by"
-    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "watched_by"
-
-    %% Media Relationships
-    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
-
-    %% --- 4. MEDIA HIERARCHY DETAILS ---
     SEASONS {
         uuid Id PK
         int Number
@@ -197,8 +170,36 @@ erDiagram
         datetime UpdatedAt
     }
 
-    MEDIA_CONTENTS ||--o{ SEASONS : "has_seasons"
-    SEASONS ||--o{ EPISODES : "has_episodes"
+    %% --- 3. THE BRIDGE (Pivot Tables) ---
+    %% Defining these last and their connections sequentially to enforce parallel layout
+    
+    %% Bridge 1: Favorites
+    USERS ||--o{ USER_FAVORITES : "saves"
+    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "favorited_by"
+
+    USER_FAVORITES {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% Bridge 2: History
+    %% Note: By listing User-History then Media-History explicitly after Favorites, 
+    %% we encourage the renderer to place History 'below' Favorites, avoiding the cross.
+    USERS ||--o{ USER_MEDIA_HISTORY : "watches"
+    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "watched_by"
+
+    USER_MEDIA_HISTORY {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        interval WatchedTime
+        boolean IsFinished
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
 ```
 
 ### Clase de Dominio e Herencia (DDD)
