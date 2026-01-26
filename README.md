@@ -90,39 +90,110 @@ Este diagrama describe la estructura de la base de datos PostgreSQL, incluyendo 
 
 ```mermaid
 erDiagram
-    USERS ||--o{ USER_ROLES : "has"
+    %% USER MANAGEMENT
+    USERS ||--o{ USER_ROLES : "belongs_to"
     ROLES ||--o{ USER_ROLES : "assigned_to"
-    USERS ||--o{ USER_MEDIA_HISTORY : "watching_progress"
-    USERS ||--o{ USER_FAVORITES : "saved_list"
-    
-    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
-    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "referenced_in"
-    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "referenced_in"
-    
-    MEDIA_CONTENTS ||--o{ SEASONS : "contains"
-    SEASONS ||--o{ EPISODES : "contains"
-    
+
+    %% TPH HIERARCHY (Single Table in DB)
     MEDIA_CONTENTS {
-        Guid Id
-        string Discriminator "Movie/Series/Doc"
+        uuid Id PK
+        string ContentType "Discriminator (Movie/Series/Documentary)"
         string Title
         string Description
         string ImageUrl
         string VideoUrl
+        interval Duration
+        datetime ReleaseDate
         string Rating
+        uuid GenreId FK
+        datetime CreatedAt
+        datetime UpdatedAt
     }
+
+    %% RELATIONSHIPS
+    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
     
+    MEDIA_CONTENTS ||--o{ SEASONS : "parent_series"
+    SEASONS ||--o{ EPISODES : "contains"
+    
+    USERS ||--o{ USER_FAVORITES : "saves"
+    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "is_bookmarked"
+    
+    USERS ||--o{ USER_MEDIA_HISTORY : "watches"
+    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "is_watched"
+
+    %% ENTITY DEFINITIONS
     USERS {
-        Guid Id
+        uuid Id PK
         string UserName
         string Email
+        string PasswordHash
+        boolean IsActive
         datetime BirthDate
         string Sex
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    ROLES {
+        uuid Id PK
+        string Name
+        string Description
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% PIVOT TABLE (Explicitly defined)
+    USER_ROLES {
+        uuid UserId FK, PK
+        uuid RoleId FK, PK
     }
 
     GENRES {
-        Guid Id
+        uuid Id PK
         string Name
+        string Description
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    SEASONS {
+        uuid Id PK
+        int Number
+        string Title
+        uuid SeriesId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    EPISODES {
+        uuid Id PK
+        int Number
+        string Title
+        string Description
+        string VideoUrl
+        interval Duration
+        uuid SeasonId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    USER_FAVORITES {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    USER_MEDIA_HISTORY {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        interval WatchedTime
+        boolean IsFinished
+        datetime CreatedAt
+        datetime UpdatedAt
     }
 ```
 
