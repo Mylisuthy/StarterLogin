@@ -90,39 +90,7 @@ Este diagrama describe la estructura de la base de datos PostgreSQL, incluyendo 
 
 ```mermaid
 erDiagram
-    %% USER MANAGEMENT
-    USERS ||--o{ USER_ROLES : "belongs_to"
-    ROLES ||--o{ USER_ROLES : "assigned_to"
-
-    %% TPH HIERARCHY (Single Table in DB)
-    MEDIA_CONTENTS {
-        uuid Id PK
-        string ContentType "Discriminator (Movie/Series/Documentary)"
-        string Title
-        string Description
-        string ImageUrl
-        string VideoUrl
-        interval Duration
-        datetime ReleaseDate
-        string Rating
-        uuid GenreId FK
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-
-    %% RELATIONSHIPS
-    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
-    
-    MEDIA_CONTENTS ||--o{ SEASONS : "parent_series"
-    SEASONS ||--o{ EPISODES : "contains"
-    
-    USERS ||--o{ USER_FAVORITES : "saves"
-    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "is_bookmarked"
-    
-    USERS ||--o{ USER_MEDIA_HISTORY : "watches"
-    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "is_watched"
-
-    %% ENTITY DEFINITIONS
+    %% --- 1. CORE USERS MODULE ---
     USERS {
         uuid Id PK
         string UserName
@@ -143,10 +111,53 @@ erDiagram
         datetime UpdatedAt
     }
 
-    %% PIVOT TABLE (Explicitly defined)
+    %% User Relationships
+    USERS ||--o{ USER_ROLES : "has_roles"
+    ROLES ||--o{ USER_ROLES : "assigned_to"
+
     USER_ROLES {
         uuid UserId FK, PK
         uuid RoleId FK, PK
+    }
+
+    %% --- 2. INTERSECTION / PIVOT TABLES (The Bridge) ---
+    %% Placing these in the middle of code often helps layout engines center them
+    USER_FAVORITES {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    USER_MEDIA_HISTORY {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        interval WatchedTime
+        boolean IsFinished
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% Connecting Users to Pivot Tables
+    USERS ||--o{ USER_FAVORITES : "saves"
+    USERS ||--o{ USER_MEDIA_HISTORY : "watches"
+
+    %% --- 3. MEDIA MODULE ---
+    MEDIA_CONTENTS {
+        uuid Id PK
+        string ContentType "Discriminator"
+        string Title
+        string Description
+        string ImageUrl
+        string VideoUrl
+        interval Duration
+        datetime ReleaseDate
+        string Rating
+        uuid GenreId FK
+        datetime CreatedAt
+        datetime UpdatedAt
     }
 
     GENRES {
@@ -157,6 +168,14 @@ erDiagram
         datetime UpdatedAt
     }
 
+    %% Connecting Media to Pivot Tables (The other side of the bridge)
+    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "favorited_by"
+    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "watched_by"
+
+    %% Media Relationships
+    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
+
+    %% --- 4. MEDIA HIERARCHY DETAILS ---
     SEASONS {
         uuid Id PK
         int Number
@@ -178,23 +197,8 @@ erDiagram
         datetime UpdatedAt
     }
 
-    USER_FAVORITES {
-        uuid Id PK
-        uuid UserId FK
-        uuid MediaContentId FK
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-
-    USER_MEDIA_HISTORY {
-        uuid Id PK
-        uuid UserId FK
-        uuid MediaContentId FK
-        interval WatchedTime
-        boolean IsFinished
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
+    MEDIA_CONTENTS ||--o{ SEASONS : "has_seasons"
+    SEASONS ||--o{ EPISODES : "has_episodes"
 ```
 
 ### Clase de Dominio e Herencia (DDD)
