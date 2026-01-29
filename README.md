@@ -73,6 +73,282 @@ graph TD
     end
 ```
 
+### Modelo de Datos (Relacional)
+
+```mermaid
+erDiagram
+    %% --- 1. USER & ROLES CLUSTER (Top/Left isolated) ---
+    ROLES ||--o{ USER_ROLES : "assigned_to"
+    USERS ||--o{ USER_ROLES : "has_roles"
+
+    ROLES {
+        uuid Id PK
+        string Name
+        string Description
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    USER_ROLES {
+        uuid UserId FK, PK
+        uuid RoleId FK, PK
+    }
+
+    USERS {
+        uuid Id PK
+        string UserName
+        string Email
+        string PasswordHash
+        boolean IsActive
+        datetime BirthDate
+        string Sex
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% --- 2. MEDIA CLUSTER (Right side) ---
+    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
+    
+    MEDIA_CONTENTS ||--o{ SEASONS : "has_seasons"
+    SEASONS ||--o{ EPISODES : "has_episodes"
+
+    GENRES {
+        uuid Id PK
+        string Name
+        string Description
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    MEDIA_CONTENTS {
+        uuid Id PK
+        string ContentType "Discriminator"
+        string Title
+        string Description
+        string ImageUrl
+        string VideoUrl
+        interval Duration
+        datetime ReleaseDate
+        string Rating
+        uuid GenreId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    SEASONS {
+        uuid Id PK
+        int Number
+        string Title
+        uuid SeriesId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    EPISODES {
+        uuid Id PK
+        int Number
+        string Title
+        string Description
+        string VideoUrl
+        interval Duration
+        uuid SeasonId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% --- 3. THE BRIDGE (Pivot Tables) ---
+    
+    %% Bridge 1: Favorites
+    USERS ||--o{ USER_FAVORITES : "saves"
+    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "favorited_by"
+
+    USER_FAVORITES {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    %% Bridge 2: History
+    USERS ||--o{ USER_MEDIA_HISTORY : "watches"
+    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "watched_by"
+
+    USER_MEDIA_HISTORY {
+        uuid Id PK
+        uuid UserId FK
+        uuid MediaContentId FK
+        interval WatchedTime
+        boolean IsFinished
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+```
+
+### Jerarquia de Dominio (Diagrama de Clases)
+
+```mermaid
+classDiagram
+    direction LR
+    
+    %% Base Entity
+    class BaseEntity {
+        <<abstract>>
+        +Guid Id
+        +DateTime CreatedAt
+        +DateTime? UpdatedAt
+        #MarkAsUpdated()
+    }
+
+    %% Value Objects
+    class Email {
+        <<ValueObject>>
+        +string Value
+        -Email()
+        +Create(string email)
+    }
+
+    class PasswordHash {
+        <<ValueObject>>
+        +string Value
+        -PasswordHash()
+        +Create(string hash)
+    }
+
+    %% User Aggregate
+    class User {
+        +string UserName
+        +Email Email
+        +PasswordHash PasswordHash
+        +bool IsActive
+        +DateTime? BirthDate
+        +string? Sex
+        +IReadOnlyCollection~Role~ Roles
+        +Create(string userName, Email email, PasswordHash passwordHash)$
+        +UpdateProfile(DateTime? birthDate, string? sex)
+        +AddRole(Role role)
+        +RemoveRole(Role role)
+        +Deactivate()
+        +Activate()
+        +UpdatePassword(PasswordHash newPasswordHash)
+    }
+
+    class Role {
+        +string Name
+        +string Description
+        +Create(string name, string description)$
+        +UpdateDescription(string description)
+    }
+
+    %% Media Aggregate
+    class MediaContent {
+        <<abstract>>
+        +string Title
+        +string Description
+        +string? ImageUrl
+        +string? VideoUrl
+        +TimeSpan? Duration
+        +DateTime? ReleaseDate
+        +string? Rating
+        +Guid GenreId
+        +Genre Genre
+        #MediaContent(...)
+    }
+
+    class Genre {
+        +string Name
+        +string? Description
+        +Create(string name, string? description)$
+        +Update(string name, string? description)
+    }
+
+    class Movie {
+        +Create(...)$
+        +Update(...)
+    }
+
+    class Series {
+        +IReadOnlyCollection~Season~ Seasons
+        +Create(...)$
+        +Update(...)
+        +AddSeason(Season season)
+    }
+
+    class Documentary {
+        +Create(...)$
+        +Update(...)
+    }
+
+    class Season {
+        +int Number
+        +string? Title
+        +Guid SeriesId
+        +IReadOnlyCollection~Episode~ Episodes
+        +Create(int number, Guid seriesId, string? title)$
+        +Update(int number, string? title)
+        +AddEpisode(Episode episode)
+    }
+
+    class Episode {
+        +int Number
+        +string Title
+        +string Description
+        +string? VideoUrl
+        +TimeSpan? Duration
+        +Guid SeasonId
+        +Create(...)$
+        +Update(...)
+    }
+
+    %% Pivot / Connection Entities
+    class UserFavorite {
+        +Guid UserId
+        +Guid MediaContentId
+        +UserFavorite(Guid userId, Guid mediaContentId)
+    }
+
+    class UserMediaHistory {
+        +Guid UserId
+        +Guid MediaContentId
+        +TimeSpan WatchedTime
+        +bool IsFinished
+        +UserMediaHistory(Guid userId, Guid mediaContentId, ...)
+        +UpdateProgress(TimeSpan watchedTime, bool isFinished)
+    }
+
+    %% Inheritance Relationships
+    BaseEntity <|-- User
+    BaseEntity <|-- Role
+    BaseEntity <|-- Genre
+    BaseEntity <|-- MediaContent
+    BaseEntity <|-- Season
+    BaseEntity <|-- Episode
+    BaseEntity <|-- UserFavorite
+    BaseEntity <|-- UserMediaHistory
+
+    MediaContent <|-- Movie
+    MediaContent <|-- Series
+    MediaContent <|-- Documentary
+
+    %% Composition & Aggregation
+    User *-- Email : Owns
+    User *-- PasswordHash : Owns
+    
+    User "1" o-- "many" Role : UserRoles
+    
+    MediaContent --> Genre : Has_One
+    
+    Series *-- Season : Contains_Many
+    Season *-- Episode : Contains_Many
+
+    %% Usage / Cross-Aggregate References
+    UserFavorite --> User : References
+    UserFavorite --> MediaContent : References
+    
+    UserMediaHistory --> User : References
+    UserMediaHistory --> MediaContent : References
+```
+
 ---
 
 ## Estructura de Directorios y Responsabilidades
