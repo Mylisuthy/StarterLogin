@@ -19,13 +19,15 @@ namespace StarterLogin.Api.Controllers;
 [Authorize]
 public class MediaController : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ISender _mediator;
+    private readonly IUnitOfWork _unitOfWork; // Still needed for Age verification until refactored further
     private readonly ICloudinaryService _cloudinaryService;
     private readonly IMemoryCache _cache;
     private const string MediaListCacheKey = "MediaList";
 
-    public MediaController(IUnitOfWork unitOfWork, ICloudinaryService cloudinaryService, IMemoryCache cache)
+    public MediaController(ISender mediator, IUnitOfWork unitOfWork, ICloudinaryService cloudinaryService, IMemoryCache cache)
     {
+        _mediator = mediator;
         _unitOfWork = unitOfWork;
         _cloudinaryService = cloudinaryService;
         _cache = cache;
@@ -37,8 +39,7 @@ public class MediaController : ControllerBase
     {
         if (!_cache.TryGetValue(MediaListCacheKey, out IEnumerable<MediaResponse>? mediaResponses))
         {
-            var media = await _unitOfWork.Media.GetAllAsync();
-            mediaResponses = media.Select(MapToResponse).ToList();
+            mediaResponses = await _mediator.Send(new GetMediaListQuery());
 
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(TimeSpan.FromMinutes(5))
@@ -54,11 +55,11 @@ public class MediaController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<MediaResponse>> GetById(Guid id)
     {
-        var content = await _unitOfWork.Media.GetByIdAsync(id);
-        if (content == null) return NotFound();
+        var response = await _mediator.Send(new GetMediaByIdQuery(id));
+        if (response == null) return NotFound();
 
         // Security: Age verification for restricted content
-        if (content.Rating == "R" || content.Rating == "18+")
+        if (response.Rating == "R" || response.Rating == "18+")
         {
             if (User.Identity?.IsAuthenticated == false)
                 return Forbid("Authentication required for restricted content.");
@@ -80,25 +81,22 @@ public class MediaController : ControllerBase
             }
         }
 
-        return Ok(MapToResponse(content));
+        return Ok(response);
     }
 
     [HttpGet("search")]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<MediaResponse>>> Search([FromQuery] string query)
     {
-        var media = await _unitOfWork.Media.GetAllAsync();
-        var results = media.Where(m => 
-            m.Title.Contains(query, StringComparison.OrdinalIgnoreCase) || 
-            (m.Genre?.Name?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)
-        );
-        return Ok(results.Select(MapToResponse));
+        var results = await _mediator.Send(new SearchMediaQuery(query));
+        return Ok(results);
     }
 
     [HttpGet("{id}/recommendations")]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<MediaResponse>>> GetRecommendations(Guid id)
     {
+        // For now, keeping simple recommendation logic in controller or could move to a query
         var content = await _unitOfWork.Media.GetByIdAsync(id);
         if (content == null) return NotFound();
 
@@ -107,7 +105,9 @@ public class MediaController : ControllerBase
             .Where(m => m.GenreId == content.GenreId && m.Id != id)
             .Take(5);
 
-        return Ok(recommendations.Select(MapToResponse));
+        return Ok(recommendations.Select(m => new MediaResponse(
+            m.Id, m.Title, m.Description, m.ImageUrl, m.VideoUrl, m.Duration, m.ReleaseDate, m.Rating, m.GenreId, m.Genre?.Name ?? "Unknown", m.GetType().Name
+        )));
     }
 
     [HttpPost]
@@ -127,7 +127,9 @@ public class MediaController : ControllerBase
 
         _cache.Remove(MediaListCacheKey);
 
-        return CreatedAtAction(nameof(GetById), new { id = content.Id }, MapToResponse(content));
+        return CreatedAtAction(nameof(GetById), new { id = content.Id }, new MediaResponse(
+            content.Id, content.Title, content.Description, content.ImageUrl, content.VideoUrl, content.Duration, content.ReleaseDate, content.Rating, content.GenreId, "Unknown", content.GetType().Name
+        ));
     }
 
     [HttpPost("upload-image")]
@@ -146,22 +148,5 @@ public class MediaController : ControllerBase
         var url = await _cloudinaryService.UploadVideoAsync(file);
         if (url == null) return BadRequest("Upload failed");
         return Ok(new { url });
-    }
-
-    private static MediaResponse MapToResponse(MediaContent m)
-    {
-        return new MediaResponse(
-            m.Id,
-            m.Title,
-            m.Description,
-            m.ImageUrl,
-            m.VideoUrl,
-            m.Duration,
-            m.ReleaseDate,
-            m.Rating,
-            m.GenreId,
-            m.Genre?.Name ?? "Unknown",
-            m.GetType().Name
-        );
     }
 }

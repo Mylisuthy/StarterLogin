@@ -15,10 +15,12 @@ namespace StarterLogin.Api.Controllers;
 [Authorize]
 public class GenresController : ControllerBase
 {
+    private readonly ISender _mediator;
     private readonly IUnitOfWork _unitOfWork;
 
-    public GenresController(IUnitOfWork unitOfWork)
+    public GenresController(ISender mediator, IUnitOfWork unitOfWork)
     {
+        _mediator = mediator;
         _unitOfWork = unitOfWork;
     }
 
@@ -26,17 +28,18 @@ public class GenresController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<GenreResponse>>> GetAll()
     {
-        var genres = await _unitOfWork.Genres.GetAllAsync();
-        return Ok(genres.Select(g => new GenreResponse(g.Id, g.Name, g.Description)));
+        var result = await _mediator.Send(new GetGenresQuery());
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<ActionResult<GenreResponse>> GetById(Guid id)
     {
-        var genre = await _unitOfWork.Genres.GetByIdAsync(id);
+        var genres = await _mediator.Send(new GetGenresQuery());
+        var genre = genres.FirstOrDefault(g => g.Id == id);
         if (genre == null) return NotFound();
-        return Ok(new GenreResponse(genre.Id, genre.Name, genre.Description));
+        return Ok(genre);
     }
 
     [HttpPost]

@@ -19,16 +19,17 @@ api.interceptors.request.use((config) => {
 // Interceptor para manejo de errores global
 api.interceptors.response.use(
     (response) => response,
-<<<<<<< HEAD
     async (error) => {
         const originalRequest = error.config;
 
-        // Evitar bucle infinito si la petición de refresh falla
-        if (originalRequest.url.includes('/auth/refresh')) {
+        // Rutas que no deben intentar refresh
+        if (originalRequest.url.includes('/auth/refresh') || originalRequest.url.includes('/auth/login')) {
             const { useAuthStore } = await import('../stores/auth');
             const auth = useAuthStore();
-            auth.logout();
-            window.location.href = '/login';
+            if (originalRequest.url.includes('/auth/refresh')) {
+                auth.logout();
+                window.location.href = '/login';
+            }
             return Promise.reject(error);
         }
 
@@ -38,7 +39,6 @@ api.interceptors.response.use(
             try {
                 const { useAuthStore } = await import('../stores/auth');
                 const auth = useAuthStore();
-
                 const refreshed = await auth.silentRefresh();
 
                 if (refreshed) {
@@ -46,20 +46,20 @@ api.interceptors.response.use(
                     return api(originalRequest);
                 }
             } catch (err) {
-                // Falló el refresh
+                // El refresh falló, procedemos al logout
             }
 
             const { useAuthStore } = await import('../stores/auth');
             const auth = useAuthStore();
             auth.logout();
             window.location.href = '/login';
-=======
-    (error) => {
+        }
+
+        // Manejo de mensajes amigables
         let message = 'Ocurrió un error inesperado.';
-        let type = 'system'; // 'user' o 'system'
+        let type = 'system';
 
         if (!error.response) {
-            // Error de Red (Servidor apagado o inaccesible)
             message = 'No se pudo conectar con el servidor. Verifique que el Backend esté encendido (Puerto 5901).';
             type = 'network';
         } else {
@@ -67,20 +67,13 @@ api.interceptors.response.use(
             const data = error.response.data;
 
             if (status === 401) {
-                localStorage.removeItem('auth_token');
-                if (window.location.pathname !== '/login') {
-                    window.location.href = '/login';
-                }
                 message = 'Su sesión ha expirado. Por favor, ingrese de nuevo.';
             } else if (data && data.detail) {
-                // Mensaje enviado por nuestro ExceptionHandlingMiddleware
                 message = data.detail;
                 type = status >= 400 && status < 500 ? 'user' : 'system';
             }
->>>>>>> origin/test
         }
 
-        // Adjuntamos el mensaje formateado al objeto de error para que la UI lo use
         error.friendlyMessage = message;
         error.errorType = type;
 

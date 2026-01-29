@@ -1,318 +1,161 @@
-# 🎥 StarterLogin: Enterprise Media Streaming Platform
+# StarterLogin: Enterprise Media Streaming Platform
 
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512bd4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Vue 3](https://img.shields.io/badge/Vue-3.0-42b883?logo=vuedotjs)](https://vuejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-latest-336791?logo=postgresql)](https://www.postgresql.org/)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean-blue)](#)
 
-Una plataforma de streaming multimedia de alto rendimiento construida para la **escalabilidad masiva** y la **estabilidad empresarial**. Diseñada bajo los principios de **Clean Architecture**, **DDD** (Domain-Driven Design) y **CQRS**, esta solución ofrece una base sólida para gestionar millones de usuarios y peticiones concurrentes.
+StarterLogin es una plataforma de streaming multimedia de alto rendimiento diseñada bajo los estándares de arquitectura limpia (Clean Architecture), diseño guiado por el dominio (Domain-Driven Design) y segregación de responsabilidad en consultas y comandos (CQRS) mediante la librería MediatR. Esta solución proporciona una base robusta y altamente escalable para gestionar volúmenes masivos de usuarios y contenido multimedia de manera eficiente y segura.
 
 ---
 
-## 🏗️ Stack Tecnológico de Alto Rendimiento
+## Especificaciones Tecnicas y Arquitectura
 
-| Capa | Tecnologías | Propósito |
+La plataforma utiliza un stack tecnológico de vanguardia para garantizar el máximo rendimiento y la estabilidad a largo plazo.
+
+| Capa | Tecnologias | Proposito y Justificacion |
 | :--- | :--- | :--- |
-| **Edge / CDN** | Cloudinary CDN | Entrega de contenido multimedia de baja latencia a nivel global. |
-| **API Layer** | .NET 9.0 Web API | Core de alto rendimiento con procesamiento asíncrono nativo. |
-| **Data Orchestration** | MediatR (CQRS) | Desacoplamiento total de comandos y consultas para escalado independiente. |
-| **Persistence** | PostgreSQL | Almacenamiento relacional robusto con soporte para particionamiento. |
-| **Caching Tier** | Redis (L2) & MemoryCache (L1) | Estrategia de caché distribuida para reducir la carga en la DB. |
-| **Frontend** | Vue 3 + Vite + Pinia | Interfaz reactiva optimizada para una experiencia de usuario fluida. |
+| **API Layer** | .NET 9.0 Web API | Implementación de controladores delgados que delegan la lógica de negocio a la capa de aplicación. |
+| **Orquestacion** | MediatR (CQRS) | Implementación de comandos y consultas desacoplados, facilitando el mantenimiento y el escalado independiente de las operaciones de lectura y escritura. |
+| **Persistencia** | PostgreSQL (EF Core) | Uso de un motor relacional de grado empresarial con soporte avanzado para consultas complejas e indexación eficiente. |
+| **Capa de Dominio** | Logic Pura (POCO) | Entidades y lógica de negocio totalmente desacopladas de cualquier infraestructura o framework externo. |
+| **Capa de Aplicacion** | Handlers de MediatR | Orquestación de casos de uso y transformación de datos entre entidades de dominio y DTOs de respuesta. |
+| **Frontend Core** | Vue 3 + Vite | Framework reactivo de última generación que garantiza una experiencia de usuario fluida y tiempos de carga mínimos. |
+| **Gestion de Estado** | Pinia | Implementación de almacenes (stores) globales para gestionar la autenticación y el flujo de datos de forma centralizada. |
 
 ---
 
-## 📊 Arquitectura de Grado Superior
+## Arquitectura del Sistema y Flujo de Datos
 
-### 🌐 Infraestructura para Millones de Usuarios
-Este diagrama describe cómo el sistema escala horizontalmente mediante el uso de capas de caché y distribución de carga.
+### Ciclo de Vida de una Peticion
 
-```mermaid
-graph TD
-    User((Usuario Final)) --> DNS[Cloudflare / DNS]
-    DNS --> CDN[Cloudinary CDN - Video/Assets]
-    DNS --> LB[Load Balancer]
-    
-    subgraph "Application Cluster"
-        LB --> API1[API Node 1]
-        LB --> API2[API Node 2]
-        LB --> APIn[API Node N]
-    end
-
-    subgraph "Cache Layer"
-        API1 & API2 & APIn --> Redis[(Redis Cluster - L2)]
-    end
-
-    subgraph "Data Layer"
-        Redis --- DB_Master[(PostgreSQL Master)]
-        DB_Master --- DB_Slave[(PostgreSQL Read Replica)]
-    end
-
-    API1 & API2 & APIn --> Cloudinary[Cloudinary API]
-```
-
-### 🧬 Modelo de Datos Refinado (ER)
-Estructura optimizada para consultas masivas, utilizando **TPH (Table Per Hierarchy)** para contenido y relaciones densas para historial y favoritos.
-
-```mermaid
-erDiagram
-    USERS ||--o{ USER_ROLES : "possesses"
-    ROLES ||--o{ USER_ROLES : "assigned"
-    
-    USERS ||--o{ USER_MEDIA_HISTORY : "tracks"
-    USERS ||--o{ USER_FAVORITES : "curates"
-    
-    GENRES ||--o{ MEDIA_CONTENTS : "categorizes"
-    
-    MEDIA_CONTENTS ||--o{ USER_MEDIA_HISTORY : "logged_in"
-    MEDIA_CONTENTS ||--o{ USER_FAVORITES : "bookmarked"
-    
-    MEDIA_CONTENTS ||--o{ SEASONS : "contains"
-    SEASONS ||--o{ EPISODES : "contains"
-    
-    MEDIA_CONTENTS {
-        Guid Id PK
-        string Discriminator "TPH: Movie/Series/Doc"
-        string Title "INDEXED"
-        string Description
-        string ImageUrl
-        string VideoUrl
-        string Rating "PG/R/G"
-        Guid GenreId FK
-    }
-    
-    USERS {
-        Guid Id PK
-        string UserName "INDEXED"
-        string Email "UNIQUE"
-        datetime BirthDate
-        string Sex
-    }
-
-    GENRES {
-        Guid Id PK
-        string Name "UNIQUE"
-    }
-
-    USER_MEDIA_HISTORY {
-        Guid Id PK
-        Guid UserId FK
-        Guid ContentId FK
-        datetime LastWatched
-        long ProgressTicks
-    }
-```
-
-### ⚡ Ciclo de Vida de una Petición (Escalabilidad)
-Cómo MediatR y el Pipeline se encargan de la validación y el logging antes de tocar el Dominio.
+La arquitectura está diseñada para que cada solicitud pase por un proceso estandarizado que garantiza la integridad y el rendimiento antes de interactuar con la persistencia.
 
 ```mermaid
 sequenceDiagram
-    participant C as Client (Vue)
-    participant G as Gateway/API
-    participant M as MediatR Pipeline
-    participant H as Handler (Application)
-    participant R as Redis (Cache)
-    participant D as DB (Postgres)
+    autonumber
+    participant Client as Cliente (Vue 3)
+    participant API as API Controller
+    participant Pipe as MediatR Pipeline
+    participant Handler as Logic Handler
+    participant DB as Persistence (PostgreSQL)
 
-    C->>G: Request Content Data
-    G->>M: Send Request
-    M->>M: Validate & Log
-    M->>H: Execute Handle()
-    H->>R: Try Get from Cache
-    alt Cache Hit
-        R-->>H: Data (Fast)
-    else Cache Miss
-        H->>D: DB Query (Primary Keys)
-        D-->>H: Data
-        H->>R: Populate Cache for Next User
-    end
-    H-->>C: Optimized Response
+    Client->>API: Solicitud HTTP con JWT
+    API->>Pipe: Notificacion de Request (Command/Query)
+    Note over Pipe: El pipeline permite aplicar decoradores de validacion, logging y auditoria.
+    Pipe->>Handler: Ejecución de la lógica de negocio
+    Handler->>DB: Interacción con el Repositorio (Unit of Work)
+    DB-->>Handler: Resultados de la base de datos
+    Handler-->>Pipe: Retorno de DTO optimizado
+    Pipe-->>API: Resultado procesado por el orquestador
+    API-->>Client: Respuesta JSON estandarizada
 ```
 
-### Clase de Dominio e Herencia (DDD)
-Diagrama detallado de la jerarquía de objetos de dominio. Se han incluido todas las propiedades para evitar cajas vacías y asegurar la comprensión total del modelo.
+### Infraestructura de Red y Escalabilidad Fisica
+
+El sistema contempla una distribución que permite el escalado horizontal y la descarga de tráfico pesado a servicios especializados.
 
 ```mermaid
-classDiagram
-    direction LR
-    class BaseEntity {
-        <<abstract>>
-        +Guid Id
-        +DateTime CreatedAt
-        +DateTime? UpdatedAt
-        #MarkAsUpdated()
-    }
+graph TD
+    User[Usuario Final] --> DNS[Gestion de DNS]
+    DNS --> CDN[Cloudinary CDN - Streaming de Video/Assets]
+    DNS --> LB[Balanceador de Carga]
     
-    class User {
-        +string UserName
-        +Email Email
-        +DateTime? BirthDate
-        +string? Sex
-        +IReadOnlyCollection~Role~ Roles
-        +UpdateProfile()
-        +AddRole()
-    }
-    
-    class MediaContent {
-        <<abstract>>
-        +string Title
-        +string Description
-        +string? ImageUrl
-        +string? VideoUrl
-        +TimeSpan? Duration
-        +string? Rating
-        +Guid GenreId
-    }
-    
-    class Movie {
-        +Create()
-        +Update()
-    }
-    
-    class Series {
-        +IReadOnlyCollection~Season~ Seasons
-        +AddSeason()
-    }
-    
-    class Documentary {
-        +Create()
-        +Update()
-    }
-    
-    class Season {
-        +int Number
-        +string? Title
-        +Guid SeriesId
-        +IReadOnlyCollection~Episode~ Episodes
-        +AddEpisode()
-    }
-    
-    class Episode {
-        +int Number
-        +string Title
-        +string? VideoUrl
-        +TimeSpan? Duration
-    }
+    subgraph "Cluster de Aplicacion"
+        LB --> API1[Nodo API Principal]
+        LB --> API2[Nodo API Secundario]
+    end
 
-    BaseEntity <|-- User
-    BaseEntity <|-- MediaContent
-    BaseEntity <|-- Genre
-    BaseEntity <|-- Season
-    BaseEntity <|-- Episode
-    
-    MediaContent <|-- Movie
-    MediaContent <|-- Series
-    MediaContent <|-- Documentary
-
-    User "many" o-- "many" Role : UserRoles
-    MediaContent "many" o-- "1" Genre
-    Series "1" *-- "many" Season
-    Season "1" *-- "many" Episode
+    subgraph "Capa de Cache y Persistencia"
+        API1 & API2 --> Cache[L1: Memory Cache / L2: Redis]
+        Cache --- DB_M[PostgreSQL Master - Escritura]
+        DB_M --- DB_R1[PostgreSQL Replica - Lectura]
+    end
 ```
 
 ---
 
-## 🚀 Estrategia para Millones de Usuarios
+## Estructura de Directorios y Responsabilidades
 
-Para soportar una carga de **millones de usuarios activos**, la arquitectura implementa y recomienda los siguientes patrones:
+Una separación clara de las capas asegura que cada componente tenga una única responsabilidad bien definida.
 
-1.  **Read Replicas (PostgreSQL)**: Separación de tráfico de lectura (90%) y escritura (10%). Las consultas de catálogo se dirigen a nodos de solo lectura.
-2.  **Multilevel Caching**: 
-    - **L1 (MemoryCache)**: Local en el nodo API para objetos estáticos (Géneros, Configuración).
-    - **L2 (Redis)**: Caché distribuido para sesiones de usuario y metadatos de contenido popular.
-3.  **Database Indexing & Partitioning**: 
-    - Índices B-Tree en columnas de búsqueda frecuente (`Title`, `Email`).
-    - Sugerencia de Particionamiento por `CreatedAt` para la tabla `USER_MEDIA_HISTORY` para mantener el rendimiento a pesar de miles de millones de registros.
-4.  **Async Everything**: Uso intensivo de `Task/await` en .NET para no bloquear hilos del pool, permitiendo miles de peticiones simultáneas por nodo.
-5.  **CDN-First Delivery**: El tráfico pesado de video no toca nuestros servidores; Cloudinary CDN entrega el contenido desde el nodo más cercano al usuario.
+### Backend (LogiBackend)
 
----
+*   **StarterLogin.Domain**: Contiene las definiciones de entidades, interfaces de repositorio y lógica de negocio pura. Es la capa de mayor nivel y no debe tener dependencias de otras capas.
+*   **StarterLogin.Application**: Define los flujos de trabajo de la aplicación, DTOs, comandos, consultas y sus respectivos manejadores. Es donde se implementa la lógica de orquestación de MediatR.
+*   **StarterLogin.Infrastructure**: Implementa las interfaces definidas en el dominio. Aquí se encuentran las configuraciones de Entity Framework, la implementación de repositorios, los servicios de seguridad (JWT) y la integración con proveedores externos como Cloudinary.
+*   **StarterLogin.Api**: Contiene los puntos de entrada HTTP, la configuración de la inyección de dependencias general y la definición del pipeline de ejecución de ASP.NET Core.
 
-## 📽️ Nuevas Funcionalidades Multimedia
-- **Tipos de Contenido**: Soporte para Películas, Series y Documentales con herencia optimizada (TPH).
-- **Categorización**: Sistema de géneros dinámicos.
-- **Experiencia de Usuario**: Historial de reproducción (continuar viendo) y lista de favoritos.
-- **Búsqueda Proactiva**: Búsqueda por título y género con recomendaciones inteligentes.
-- **Seguridad**: Validación de edad automática para contenido restringido.
+### Frontend (LogiFrontend)
+
+*   **src/api**: Centraliza la configuración de Axios, incluyendo interceptores para la gestión automática de tokens de autenticación en las cabeceras.
+*   **src/services**: Proporciona una capa de abstracción para las llamadas a la API, agrupadas por dominios funcionales (autenticación, multimedia).
+*   **src/stores**: Gestiona el estado reactivo global de la aplicación utilizando Pinia.
+*   **src/views**: Agrupa los componentes de nivel de página que se asocian a las rutas del sistema.
+*   **src/components**: Contiene elementos de interfaz de usuario reutilizables siguiendo un enfoque de diseño modular.
 
 ---
 
-## 🗺️ Mapa del Proyecto
+## Configuracion del Sistema
 
-### 🟡 Resumen Técnico (Docker)
-| Servicio | URL Local | Puerto Host | Notas |
+La correcta configuración de las variables de entorno y los archivos de parámetros es fundamental para el funcionamiento del ecosistema. A continuación se detallan las configuraciones requeridas para ambos componentes.
+
+### Configuracion del Backend (appsettings.json)
+
+El archivo `appsettings.json` en `LogiBackend/src/StarterLogin.Api` gestiona la conectividad y la seguridad del servidor.
+
+| Seccion | Variable | Descripcion | Ejemplo / Valor Recomendado |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | `http://localhost:5900` | 5900 | Interfaz de usuario (Vue 3) |
-| **Backend API** | `http://localhost:5901` | 5901 | Endpoint base: `/api` |
-| **API Docs (Swagger)** | `http://localhost:5901/swagger` | 5901 | Documentación Interactiva |
-| **Base de Datos** | `localhost:5902` | 5902 | PostgreSQL (admin/admin) |
+| **ConnectionStrings** | `DefaultConnection` | Cadena de conexión para PostgreSQL. | `Host=localhost;Port=5902;Database=StarterLoginDb;Username=postgres;Password=admin` |
+| **JwtSettings** | `Secret` | Clave de firma para los tokens JWT. Debe ser una cadena larga y aleatoria. | `TU_CLAVE_SECRETA_DE_AL_MENOS_32_CARACTERES` |
+| **JwtSettings** | `Issuer` | El emisor del token (usualmente el nombre de la API). | `StarterLoginApi` |
+| **JwtSettings** | `Audience` | El receptor del token (usualmente el nombre del frontend). | `StarterLoginFront` |
+| **JwtSettings** | `ExpirationInMinutes` | Tiempo de vida del Access Token. | `1440` (24 horas) |
+| **CloudinarySettings** | `CloudName` | Nombre de la nube en el dashboard de Cloudinary. | `nombre_de_tu_nube` |
+| **CloudinarySettings** | `ApiKey` | Clave de API proporcionada por Cloudinary. | `tu_api_key_publica` |
+| **CloudinarySettings** | `ApiSecret` | Secreto de API para operaciones firmadas. | `tu_api_secret_privado` |
+
+### Configuracion del Frontend (.env)
+
+El frontend utiliza variables de entorno cargadas por Vite. Cree un archivo `.env` en la raíz de `LogiFrontend` basado en el siguiente esquema:
+
+| Variable | Descripcion | Valor por Defecto / Local |
+| :--- | :--- | :--- |
+| `VITE_API_URL` | URL base de los endpoints de la API backend. | `http://localhost:5901/api` |
+| `VITE_APP_TITLE` | Título de la aplicación que se muestra en el navegador. | `StarterLogin` |
+
+> [!NOTE]
+> En entornos Docker, estas variables se inyectan automáticamente a través del archivo `docker-compose.yml`. Si realiza cambios manuales en el entorno local, asegúrese de reiniciar los servicios para que los cambios surtan efecto.
 
 ---
 
-### 🟢 Backend (Ver [Guía Detallada](./LogiBackend/README.md))
+## Guia de Instalacion y Despliegue
 
-| Capa | Responsabilidad |
-| :--- | :--- |
-| **StarterLogin.Domain** | Entidades de negocio y lógica pura. |
-| **StarterLogin.Application** | Orquestación y casos de uso (MediatR). |
-| **StarterLogin.Infrastructure** | Datos (EF Core), Seguridad y JWT. |
-| **StarterLogin.Api** | Controladores y Endpoints REST. |
+### Despliegue con Docker
 
-### 🔵 Frontend (Ver [Guía Detallada](./LogiFrontend/README.md))
+El uso de Docker garantiza la consistencia entre los entornos de desarrollo, pruebas y producción.
 
-| Directorio | Responsabilidad |
-| :--- | :--- |
-| **`api/`** | Servicios de comunicación HTTP (Axios) configurados para interactuar con el backend. |
-| **`stores/`** | Gestión del estado global (Autenticación, Notificaciones) mediante Pinia. |
-| **`views/`** | Páginas principales de la aplicación (Login, Dashboard, Perfil). |
-| **`components/`** | Elementos de UI reutilizables como la barra de navegación y contenedores de mensajes. |
-
----
-
-## 🔄 Ciclo de Vida de una Petición (Ejemplo: Login)
-
-Para entender cómo fluye la información a través del sistema, aquí se detalla el ciclo de vida de una solicitud de inicio de sesión:
-
-1.  **Frontend (UI)**: El usuario introduce sus credenciales en `Login.vue`. Al hacer clic en "Entrar", se invoca la acción `login` en el `authStore`.
-2.  **Frontend (API)**: El `authStore` envía una petición POST a `/api/auth/login` mediante Axios.
-3.  **Backend (API)**: El `AuthController` recibe la solicitud y delega la ejecución al `Mediator` enviando un `LoginUserQuery`.
-4.  **Backend (Application)**: El `LoginUserQueryHandler` toma el control.
-    - Consulta al repositorio (`Infrastructure`) para encontrar al usuario en PostgreSQL.
-    - Valida la contraseña usando el servicio de hashing.
-    - Si es válido, solicita al generador de tokens un JWT firmado.
-5.  **Backend (Infrastructure)**: El repositorio realiza la consulta SQL optimizada a la base de datos PostgreSQL.
-6.  **Respuesta**: El `Handler` devuelve la información del usuario y el token al controlador, que responde con un `200 OK`.
-7.  **Sincronización**: El Store de Vue guarda el token y redirige al usuario al **Dashboard**.
-
----
-
-## 🛠️ Configuración y Ejecución
-
-### Requisitos
-- .NET 9.0 SDK
-- PostgreSQL
-- Node.js (v18+)
-
-### Ejecución con Docker (Recomendado)
-```bash
-docker-compose up --build
-```
-
-### Ejecución Manual
-1.  **Base de Datos**: Asegúrate de tener PostgreSQL corriendo (en el puerto **5902** si usas Docker) y actualiza el `appsettings.json`.
-2.  **Migraciones**: Al cambiar de SQL Server a PostgreSQL, es necesario regenerar las migraciones:
+1.  Asegúrese de tener instalado Docker Desktop en su sistema.
+2.  Desde la raíz del proyecto, ejecute el siguiente comando:
     ```bash
-    cd LogiBackend/src/StarterLogin.Infrastructure
-    dotnet ef migrations add InitialPostgres --startup-project ../StarterLogin.Api
-    dotnet ef database update --startup-project ../StarterLogin.Api
+    docker-compose up --build
     ```
-3.  **Backend**:
+3.  Una vez finalizado, los servicios estarán disponibles en:
+    - Frontend: http://localhost:5900
+    - Backend Swagger: http://localhost:5901/swagger
+
+### Despliegue en Entorno de Desarrollo Local
+
+Si prefiere ejecutar los servicios de forma nativa para un desarrollo más dinámico:
+
+1.  **Requisitos**: Instale el SDK de .NET 9.0, Node.js v18+ y una instancia de PostgreSQL accesible.
+2.  **Configuracion de Base de Datos**: Actualice la cadena de conexión en el archivo `appsettings.json` o utilice las variables de entorno correspondientes.
+3.  **Ejecucion del Backend**:
     ```bash
     cd LogiBackend/src/StarterLogin.Api
     dotnet run
     ```
-4.  **Frontend**:
+4.  **Ejecucion del Frontend**:
     ```bash
     cd LogiFrontend
     npm install
@@ -321,31 +164,39 @@ docker-compose up --build
 
 ---
 
-## 🛠️ Comandos Útiles (Useful Commands)
+## Estrategias de Desarrollo y Mejores Practicas
 
-### 🐳 Docker & Despliegue
-- `docker-compose up --build`: Construye y levanta todo el sistema.
-- `docker-compose down -v`: Borra todo y **limpia la base de datos**. Útil para resetear seeds.
-- `docker logs -f starterlogin-backend-1`: Ver logs del servidor en tiempo real.
+### Implementacion de Nuevas Funcionalidades
 
-### 🛡️ Backend (.NET)
-- `dotnet watch --project LogiBackend/src/StarterLogin.Api`: Inicia con auto-recarga.
-- `dotnet ef migrations add <Nombre> --project LogiBackend/src/StarterLogin.Infrastructure --startup-project LogiBackend/src/StarterLogin.Api`: Crea una migración.
-- `dotnet ef database update --project LogiBackend/src/StarterLogin.Infrastructure --startup-project LogiBackend/src/StarterLogin.Api`: Aplica cambios a la DB.
+Para mantener la integridad arquitectónica, siga estos pasos al extender el sistema:
 
-### 🎨 Frontend (Vue)
-- `npm run dev`: Servidor de desarrollo rápido con HMR.
-- `npm run build`: Genera archivos optimizados para producción.
+1.  **Definicion en el Dominio**: Si la funcionalidad requiere nuevas entidades o cambios en las existentes, empiece por la capa de Dominio.
+2.  **Definicion de Contratos**: Crea las interfaces necesarias en el Dominio para que la Infraestructura las implemente después.
+3.  **Casos de Uso**: Crea los Comandos o Consultas en la capa de Aplicación junto con sus manejadores.
+4.  **Exposicion de API**: Añada o actualice los controladores en la capa Api para permitir el acceso a través de MediatR.
+5.  **Integracion Frontend**: Implemente el servicio correspondiente en Vue y actualice los almacenes de Pinia según sea necesario.
+
+### Recomendaciones Expertas de Rendimiento y Seguridad
+
+> [!IMPORTANT]
+> **Gestion de Caché**: Utilice estrategias de caché SlidingExpiration para datos de alta frecuencia de consulta pero baja volatilidad. Esto reduce drásticamente la carga sobre la base de datos y mejora los tiempos de respuesta.
+
+> [!IMPORTANT]
+> **Validacion en Pipeline**: Implemente validaciones automáticas utilizando FluentValidation dentro del pipeline de MediatR. Esto asegura que ningún comando con datos inválidos llegue siquiera a la capa de infraestructura.
+
+> [!IMPORTANT]
+> **Seguridad JWT**: No almacene información sensible en los claims del token. El backend debe validar siempre la identidad del usuario contra la base de datos o el sistema de caché para operaciones críticas.
 
 ---
 
-## 💡 Consejos Pro
+## Solucion de Problemas y Diagnostico
 
-- **Limpieza de Caché**: Si Docker se comporta extraño, usa `docker system prune` (Cuidado: borra todo lo que no uses).
-- **Puertos**: Si cambias los puertos en `docker-compose.yml`, recuerda actualizar el `baseURL` en `LogiFrontend/src/api/axios.ts`.
-- **Transparencia**: Usa la interfaz de **Swagger** (`/swagger`) para probar los endpoints sin necesidad de usar el frontend.
+*   **Conflictos de Puerto**: Si los puertos 5900 o 5901 están ocupados, modifique el archivo `docker-compose.yml` y ajuste la configuración de CORS en el backend y la variable de entorno de la API en el frontend.
+*   **Errores de Migracion**: En caso de errores al iniciar la base de datos, limpie los volúmenes de Docker mediante `docker-compose down -v` para forzar un re-seed de los datos iniciales.
+*   **Conexion de Red en Docker**: Recuerde que dentro de los contenedores, la instancia de base de datos se identifica por el nombre del servicio definido en el archivo compose, no por "localhost".
 
 ---
 
-## 📄 Licencia
-Este proyecto está bajo la licencia MIT.
+## Licencia
+
+Este proyecto se distribuye bajo la licencia MIT.
